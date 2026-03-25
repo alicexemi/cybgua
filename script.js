@@ -1,13 +1,3 @@
-// ... (existing constants and variables remain unchanged)
-
-// ============================================
-// ТЕСТ ПО КИБЕРБЕЗОПАСНОСТИ (Updated to show certificate tab)
-// ============================================
-
-// ... (existing cyberQuestions array remains unchanged)
-
-// ... (existing functions like calculateCorrectAnswers, loadQuestion, etc. remain unchanged)
-
 function submitTest() {
     const allAnswered = userAnswers.every(answer => answer !== null);
     if (!allAnswered) {
