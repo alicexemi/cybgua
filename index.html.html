@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CyberGuard | Платформа Кибербезопасности</title>
+    <!-- Подключение шрифтов -->
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <!-- Подключение стилей -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="holographic-bg"></div>
+    
+    <!-- Popup Достижения -->
+    <div id="achievement-popup" class="achievement-popup">
+        <div class="achievement-icon-large" id="achievement-icon">🏆</div>
+        <h3 id="achievement-name">Новое достижение!</h3>
+        <p id="achievement-desc">Описание</p>
+    </div>
+
+    <!-- Навигация -->
+    <nav>
+        <ul>
+            <li><a href="#" class="nav-link active" data-tab="test-section">🎮 Тест</a></li>
+            <li><a href="#" class="nav-link" data-tab="video-section">🎬 AI vs Real</a></li>
+            <li><a href="#" class="nav-link" data-tab="password-section">🔐 Пароль</a></li>
+            <li><a href="#" class="nav-link" data-tab="link-section">🔗 Ссылки</a></li>
+            <li><a href="#" class="nav-link" data-tab="memo-section">📚 Памятка</a></li>
+            <li><a href="#" class="nav-link" data-tab="scammer-section">⚠️ Мошенники</a></li>
+            <li><a href="#" class="nav-link" data-tab="dashboard-section">👤 Кабинет</a></li>
+            <li><a href="#" class="nav-link" data-tab="phishing-section">📧 Фишинг</a></li>
+            <li><a href="#" class="nav-link" data-tab="breach-section">🔍 Утечки</a></li>
+            <li><a href="#" class="nav-link" data-tab="scanner-section">📁 Сканер</a></li>
+        </ul>
+    </nav>
+    <button id="theme-toggle">🌙</button>
+
+    <header>
+        <h1>CyberGuard</h1>
+        <p>Твой щит в цифровом мире. Обучение, защита и безопасность.</p>
+    </header>
+
+    <main id="test-section" class="tab-section active">
+        <div class="section-title-wrapper"><h2>Тест по кибербезопасности</h2></div>
+        
+        <!-- Сам тест -->
+        <div class="game-container" id="cyber-test">
+            <div class="game-progress" id="test-progress"></div>
+            <p id="question-number">Вопрос 1 из 14</p>
+            <div class="question-container">
+                <p class="question-text" id="question-text">Загрузка вопросов...</p>
+                <div class="answers-container" id="answers-container"></div>
+            </div>
+            <div class="test-controls">
+                <button class="btn btn-prev" id="prev-btn" disabled>← Назад</button>
+                <button class="btn btn-next" id="next-btn" disabled>Далее →</button>
+                <button class="btn btn-submit" id="submit-btn" style="display: none;">✓ Завершить тест</button>
+            </div>
+        </div>
+
+        <!-- Результаты -->
+        <div class="game-container" id="results-page" style="display: none;">
+            <h2 class="results-title">📊 Ваши результаты</h2>
+            <div class="results-summary">
+                <div class="results-score">
+                    <div class="score-circle"><span id="score-percentage">0%</span></div>
+                    <p id="score-description">Начальный уровень</p>
+                    <p>Правильных ответов: <span id="score-value">0</span></p>
+                </div>
+                <div class="results-details">
+                    <h3>По категориям:</h3>
+                    <ul id="category-list"></ul>
+                </div>
+            </div>
+
+            <!-- Сертификат -->
+            <div class="certificate-section">
+                <h3>📜 Получить сертификат</h3>
+                <div class="certificate-form">
+                    <div class="form-group"><label>Имя</label><input type="text" id="user-name" placeholder="Ваше имя"></div>
+                    <div class="form-group"><label>Фамилия</label><input type="text" id="user-surname" placeholder="Ваша фамилия"></div>
+                </div>
+                <div class="certificate-styles">
+                    <div class="certificate-style-option classic active" data-style="classic"><div class="style-preview" style="background:white"></div><span class="style-name">Классика</span></div>
+                    <div class="certificate-style-option tech" data-style="tech"><div class="style-preview" style="background:white"></div><span class="style-name">Техно</span></div>
+                    <div class="certificate-style-option green" data-style="green"><div class="style-preview" style="background:white"></div><span class="style-name">Зеленый</span></div>
+                </div>
+                <button class="btn btn-download" id="generate-certificate">📜 Сгенерировать</button>
+                
+                <div id="certificate-preview" class="certificate-preview">
+                    <div id="certificate-template" class="certificate-template">
+                        <div class="certificate-border" style="border:3px solid #000; padding:20px;">
+                            <h2>СЕРТИФИКАТ</h2>
+                            <p>Настоящим подтверждается, что</p>
+                            <h3 id="cert-name">Имя Фамилия</h3>
+                            <p>Успешно прошел тест на платформе CyberGuard</p>
+                            <div style="margin: 20px 0; padding: 10px; border: 1px solid #000;">
+                                <p>Результат: <strong id="cert-score">0%</strong></p>
+                                <p>Уровень: <strong id="cert-level">...</strong></p>
+                                <p>Дата: <strong id="cert-date">...</strong></p>
+                            </div>
+                        </div>
+                    </div>
+                    <button class="btn btn-download" id="download-certificate">📄 Скачать PNG</button>
+                </div>
+                <button class="btn btn-restart" id="restart-test">🔄 Пройти заново</button>
+            </div>
+        </div>
+    </main>
+
+    <!-- AI vs Real -->
+    <section id="video-section" class="tab-section">
+        <div class="section-title-wrapper"><h2>🎬 AI vs Real</h2></div>
+        <div class="game-container">
+            <p>Счёт: <span id="video-score-value">0</span> из <span id="video-total">0</span></p>
+            <div class="image-box"><iframe id="video-player" width="100%" height="100%" src="" frameborder="0" allowfullscreen></iframe></div>
+            <p id="video-description">Описание видео...</p>
+            <div class="game-buttons">
+                <button class="btn btn-ai" id="btn-ai">🤖 Это AI</button>
+                <button class="btn btn-real" id="btn-real">👤 Это реальное</button>
+                <button class="btn btn-next" id="btn-next-video" style="display:none">Следующее →</button>
+            </div>
+            <p id="game-result"></p>
+        </div>
+    </section>
+
+    <!-- Пароль -->
+    <section id="password-section" class="tab-section">
+        <div class="section-title-wrapper"><h2>🔐 Анализатор паролей</h2></div>
+        <div class="password-checker">
+            <div class="password-input-container">
+                <input type="password" id="password-input" placeholder="Введите пароль">
+                <button id="toggle-password">👁️</button>
+            </div>
+            <div class="password-strength"><div id="password-strength-fill"></div></div>
+            <div class="password-feedback" id="password-feedback"></div>
+            <div class="password-requirements">
+                <div class="requirement" id="length-req">12+ символов</div>
+                <div class="requirement" id="upper-req">A-Z</div>
+                <div class="requirement" id="lower-req">a-z</div>
+                <div class="requirement" id="number-req">0-9</div>
+                <div class="requirement" id="special-req">!@#</div>
+                <div class="requirement" id="common-req">Не простой</div>
+            </div>
+        </div>
+
+        <div class="section-title-wrapper"><h2>✨ Генератор</h2></div>
+        <div class="game-container">
+            <div class="generator-output" style="display:flex; gap:10px; margin-bottom:20px;">
+                <input type="text" id="generated-password" readonly style="flex:1; padding:10px;">
+                <button class="btn" id="btn-copy">📋</button>
+            </div>
+            <div style="margin-bottom:20px;">
+                <label>Длина: <span id="length-value">16</span></label>
+                <input type="range" id="password-length" min="8" max="32" value="16" style="width:100%">
+            </div>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:20px; text-align:left;">
+                <label><input type="checkbox" id="include-upper" checked> Заглавные</label>
+                <label><input type="checkbox" id="include-lower" checked> Строчные</label>
+                <label><input type="checkbox" id="include-numbers" checked> Цифры</label>
+                <label><input type="checkbox" id="include-special" checked> Символы</label>
+            </div>
+            <button class="btn btn-next" id="btn-generate">🔐 Сгенерировать</button>
+        </div>
+    </section>
+
+    <!-- Ссылки -->
+    <section id="link-section" class="tab-section">
+        <div class="section-title-wrapper"><h2>🔗 Сканер ссылок</h2></div>
+        <div class="link-checker">
+            <div class="link-input-container">
+                <input type="text" id="link-input" placeholder="Вставьте URL">
+                <button class="btn" id="check-link-btn">🔍 Проверить</button>
+            </div>
+            <div class="link-result" id="link-result">
+                <span class="link-safety-level" id="safety-level">...</span>
+                <div class="link-details"><p id="link-domain"></p></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Памятка -->
+    <section id="memo-section" class="tab-section">
+        <div class="section-title-wrapper"><h2>📚 Памятка</h2></div>
+        <div class="memo-grid">
+            <div class="memo-card"><h3>🔗 Фишинг</h3><p>Проверяй домен перед кликом.</p></div>
+            <div class="memo-card"><h3>📥 Файлы</h3><p>Скачивай только с официальных сайтов.</p></div>
+            <div class="memo-card"><h3>🔐 Данные</h3><p>Никому не говори коды из СМС.</p></div>
+            <div class="memo-card"><h3>🛡️ 2FA</h3><p>Включай двухфакторку везде.</p></div>
+        </div>
+    </section>
+
+    <!-- Мошенники -->
+    <section id="scammer-section" class="tab-section">
+        <div class="section-title-wrapper"><h2>⚠️ Виды мошенников</h2></div>
+        <div class="memo-grid">
+            <div class="memo-card"><h3>🎣 Фишеры</h3><p>Выдают себя за банки.</p></div>
+            <div class="memo-card"><h3>🎭 Инженерия</h3><p>Манипулируют эмоциями.</p></div>
+            <div class="memo-card"><h3>💸 Дропперы</h3><p>Отмывают деньги через чужие карты.</p></div>
+        </div>
+    </section>
+
+    <!-- Личный кабинет -->
+    <section id="dashboard-section" class="tab-section">
+        <div class="dashboard-container">
+            <div class="dashboard-header">
+                <div class="user-avatar"><span id="user-avatar-initial">Г</span></div>
+                <div class="user-info">
+                    <h3 id="dashboard-username">Гость</h3>
+                    <p id="dashboard-level">Уровень: Новичок</p>
+                    <div class="xp-bar"><div id="xp-progress" style="width: 0%;"></div></div>
+                    <p id="xp-text">0 / 1000 XP</p>
+                </div>
+            </div>
+            <div class="dashboard-stats">
+                <div class="stat-card"><span class="stat-value" id="stat-tests">0</span> Тестов</div>
+                <div class="stat-card"><span class="stat-value" id="stat-achievements">0</span> Достижений</div>
+                <div class="stat-card"><span class="stat-value" id="stat-average">0%</span> Ср. балл</div>
+                <div class="stat-card"><span class="stat-value" id="stat-streak">0</span> Дней подряд</div>
+            </div>
+            <div class="dashboard-achievements">
+                <h3>🏅 Достижения</h3>
+                <div id="achievements-list"></div>
+            </div>
+            <div class="dashboard-history">
+                <h3>📜 История</h3>
+                <div id="activity-history"></div>
+            </div>
+            <button class="btn btn-clear" id="clear-data-btn" style="margin-top:20px">🗑️ Очистить данные</button>
+        </div>
+    </section>
+
+    <!-- Фишинг (Симулятор) -->
+    <section id="phishing-section" class="tab-section">
+        <div class="section-title-wrapper"><h2>📧 Симулятор фишинга</h2></div>
+        <div class="simulator-container">
+            <div class="email-display">
+                <p>От: support@bank-security.ru</p>
+                <p>Тема: <strong>Срочно подтвердите данные!</strong></p>
+                <p>Ваш аккаунт будет заблокирован. <a href="#">Нажмите здесь</a></p>
+            </div>
+            <div class="simulator-controls">
+                <button class="btn btn-phishing">⚠️ Это фишинг</button>
+                <button class="btn btn-legitimate">✅ Нормальное</button>
+            </div>
+            <div class="simulator-feedback" id="phishing-feedback"></div>
+        </div>
+    </section>
+
+    <!-- Утечки -->
+    <section id="breach-section" class="tab-section">
+        <div class="section-title-wrapper"><h2>🔍 Проверка утечек</h2></div>
+        <div class="breach-checker-container">
+            <div class="breach-input-group">
+                <input type="text" id="breach-email" placeholder="Ваш Email">
+                <button class="btn btn-check" id="check-breach-btn">🔍 Проверить</button>
+            </div>
+            <div class="breach-result" id="breach-result" style="display: none;">
+                <span id="breach-text"></span>
+            </div>
+            <p style="font-size:0.8rem; color:var(--text-muted)">⚠️ Это симуляция.</p>
+        </div>
+    </section>
+
+    <!-- Сканер файлов -->
+    <section id="scanner-section" class="tab-section">
+        <div class="section-title-wrapper"><h2>📁 Сканер файлов</h2></div>
+        <div class="scanner-container">
+            <div class="upload-area" id="upload-area">
+                <p>📤 Нажмите или перетащите файл</p>
+                <input type="file" id="file-input" hidden>
+            </div>
+            <div id="scan-progress" style="display:none; margin:20px 0;">
+                <div class="xp-bar"><div id="scan-bar" style="width:0%"></div></div>
+            </div>
+            <div class="scan-result" id="scan-result" style="display: none;">
+                <p id="file-name"></p>
+                <div class="scan-actions">
+                    <button class="btn btn-danger" id="btn-delete-file">🗑️ Удалить</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer>© 2026 CyberGuard Platform</footer>
+
+    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
