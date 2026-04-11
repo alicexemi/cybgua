@@ -64,7 +64,7 @@
 <button class="btn btn-secondary" onclick="showPage('memo')"><i class="fas fa-book"></i> Памятка</button>
 </div>
 </div>
-<h2 style="font-size:22px;font-weight:700;margin:40px 0 20px">Разделы</h2>
+<h2 class="section-title">Разделы</h2>
 <div class="cards-grid">
 <div class="card" onclick="showPage('quiz')"><div class="card-icon purple"><i class="fas fa-gamepad"></i></div><h3>🎮 Тест</h3><p>Проверь свои знания по кибербезопасности и получи сертификат</p></div>
 <div class="card" onclick="showPage('ai-vs-real')"><div class="card-icon cyan"><i class="fas fa-video"></i></div><h3>🎬 AI vs Real</h3><p>Научись отличать реальные видео от сгенерированных нейросетями</p></div>
@@ -88,11 +88,11 @@
 
 <div class="page" id="page-ai-vs-real">
 <div class="header"><button class="back-btn" onclick="showPage('home')"><i class="fas fa-arrow-left"></i> На главную</button><h1>🎬 <span>AI vs Real</span></h1></div>
-<p style="color:var(--text-secondary);margin-bottom:24px">Посмотри на изображение и попробуй определить: это реальное фото или сгенерировано нейросетью?</p>
+<p class="page-desc">Посмотри на изображение и попробуй определить: это реальное фото или сгенерировано нейросетью?</p>
 <div id="aiGameArea"></div>
-<div class="result-box info" style="margin-top:24px">
-<h3 style="margin-bottom:12px"><i class="fas fa-lightbulb" style="color:var(--warning)"></i> Как отличить фейк?</h3>
-<div class="tips-grid" style="margin-top:0">
+<div class="result-box info">
+<h3><i class="fas fa-lightbulb" style="color:var(--warning)"></i> Как отличить фейк?</h3>
+<div class="tips-grid">
 <div class="tip-card"><div class="tip-icon">👁️</div><h4>Обрати внимание на глаза</h4><p>У нейросетей часто получаются неестественные зрачки, разный размер глаз или странное отражение</p></div>
 <div class="tip-card"><div class="tip-icon">🖐️</div><h4>Посмотри на руки и пальцы</h4><p>Нейросети часто рисуют лишние или недостающие пальцы, неестественные суставы</p></div>
 <div class="tip-card"><div class="tip-icon">📝</div><h4>Проверь текст на изображении</h4><p>Надписи на AI-картинках часто содержат бессмысленные символы или искажённые буквы</p></div>
@@ -105,7 +105,7 @@
 
 <div class="page" id="page-password">
 <div class="header"><button class="back-btn" onclick="showPage('home')"><i class="fas fa-arrow-left"></i> На главную</button><h1>🔐 <span>Генератор паролей</span></h1></div>
-<div style="max-width:600px">
+<div class="page-content">
 <div class="input-group"><label>Длина пароля: <span id="passLenVal">16</span></label><div class="slider-group"><input type="range" id="passLength" min="6" max="64" value="16" oninput="updatePassLength()"></div></div>
 <div class="checkbox-group">
 <label class="checkbox-item active" id="cb-upper"><input type="checkbox" checked onchange="toggleCb(this,'cb-upper')"> A-Z Заглавные</label>
@@ -114,24 +114,24 @@
 <label class="checkbox-item active" id="cb-symbols"><input type="checkbox" checked onchange="toggleCb(this,'cb-symbols')"> !@# Спецсимволы</label>
 <label class="checkbox-item" id="cb-cyrillic"><input type="checkbox" onchange="toggleCb(this,'cb-cyrillic')"> А-Я Кириллица</label>
 </div>
-<button class="btn btn-primary" onclick="generatePassword()" style="width:100%;justify-content:center"><i class="fas fa-wand-magic-sparkles"></i> Сгенерировать</button>
+<button class="btn btn-primary" onclick="generatePassword()"><i class="fas fa-wand-magic-sparkles"></i> Сгенерировать</button>
 <div id="passwordResult" style="display:none">
 <div class="password-display"><span id="generatedPass"></span><button class="btn btn-sm btn-secondary" onclick="copyPassword()"><i class="fas fa-copy"></i></button></div>
 <div class="password-strength" id="passStrength"></div>
-<p id="passStrengthText" style="font-size:13px;color:var(--text-secondary);margin-bottom:16px"></p>
+<p id="passStrengthText"></p>
 </div>
 </div>
 </div>
 
 <div class="page" id="page-links">
 <div class="header"><button class="back-btn" onclick="showPage('home')"><i class="fas fa-arrow-left"></i> На главную</button><h1>🔗 <span>Проверка ссылок</span></h1></div>
-<div style="max-width:600px">
+<div class="page-content">
 <div class="input-group"><label>Вставьте ссылку для проверки</label><input type="url" id="linkInput" placeholder="https://example.com"></div>
-<button class="btn btn-primary" onclick="checkLink()" style="width:100%;justify-content:center"><i class="fas fa-search"></i> Проверить</button>
+<button class="btn btn-primary" onclick="checkLink()"><i class="fas fa-search"></i> Проверить</button>
 <div id="linkResult" style="display:none"></div>
-<div class="result-box info" style="margin-top:20px">
-<h4 style="margin-bottom:8px"><i class="fas fa-info-circle" style="color:var(--accent)"></i> На что обратить внимание:</h4>
-<ul style="list-style:none;font-size:13px;color:var(--text-secondary)">
+<div class="result-box info">
+<h4><i class="fas fa-info-circle" style="color:var(--accent)"></i> На что обратить внимание:</h4>
+<ul class="info-list">
 <li>• Подозрительный домен (не совпадает с названием компании)</li>
 <li>• Отсутствие HTTPS (нет замка в адресной строке)</li>
 <li>• Опечатки в названии сайта (g0ogle.com вместо google.com)</li>
@@ -145,10 +145,10 @@
 <div class="page" id="page-memo">
 <div class="header"><button class="back-btn" onclick="showPage('home')"><i class="fas fa-arrow-left"></i> На главную</button><h1>📚 <span>Памятка</span></h1></div>
 <div class="tab-buttons">
-<button class="tab-btn active" onclick="showMemoTab('basics')">Основы</button>
-<button class="tab-btn" onclick="showMemoTab('social')">Соцсети</button>
-<button class="tab-btn" onclick="showMemoTab('data')">Данные</button>
-<button class="tab-btn" onclick="showMemoTab('gaming')">Игры</button>
+<button class="tab-btn active" onclick="showMemoTab('basics',this)">Основы</button>
+<button class="tab-btn" onclick="showMemoTab('social',this)">Соцсети</button>
+<button class="tab-btn" onclick="showMemoTab('data',this)">Данные</button>
+<button class="tab-btn" onclick="showMemoTab('gaming',this)">Игры</button>
 </div>
 <div id="memoTab-basics" class="memo-tab">
 <div class="tips-grid">
@@ -200,17 +200,17 @@
 
 <div class="page" id="page-scanner">
 <div class="header"><button class="back-btn" onclick="showPage('home')"><i class="fas fa-arrow-left"></i> На главную</button><h1>📁 <span>Сканер файлов</span></h1></div>
-<div style="max-width:600px;margin:0 auto">
+<div class="page-content">
 <div class="scanner-drop" id="scannerDrop" onclick="document.getElementById('fileInput').click()">
 <i class="fas fa-cloud-arrow-up"></i>
 <p>Перетащите файл сюда или нажмите для выбора</p>
-<p style="font-size:12px;margin-top:8px;color:var(--text-secondary)">Максимальный размер: 50 МБ</p>
+<p class="small-text">Максимальный размер: 50 МБ</p>
 </div>
 <input type="file" id="fileInput" style="display:none" onchange="scanFile(this.files[0])">
 <div id="scannerResult" style="display:none"></div>
-<div class="result-box info" style="margin-top:20px">
-<h4 style="margin-bottom:8px"><i class="fas fa-info-circle" style="color:var(--accent)"></i> Важно</h4>
-<p style="font-size:13px;color:var(--text-secondary)">Это симулятор сканера для обучения. Для реальной проверки файлов используйте антивирусные программы: Kaspersky, Dr.Web, Malwarebytes.</p>
+<div class="result-box info">
+<h4><i class="fas fa-info-circle" style="color:var(--accent)"></i> Важно</h4>
+<p class="small-text">Это симулятор сканера для обучения. Для реальной проверки файлов используйте антивирусные программы: Kaspersky, Dr.Web, Malwarebytes.</p>
 </div>
 </div>
 </div>
@@ -223,19 +223,19 @@
 <div class="stat-card"><div class="stat-value" id="statAchievements">0</div><div class="stat-label">Достижений</div></div>
 <div class="stat-card"><div class="stat-value" id="statTotal">0</div><div class="stat-label">Всего действий</div></div>
 </div>
-<h3 style="font-size:18px;font-weight:600;margin:24px 0 12px">🏆 Достижения</h3>
-<div id="achievementsGrid" style="display:flex;flex-wrap:wrap;gap:0"></div>
-<h3 style="font-size:18px;font-weight:600;margin:24px 0 12px">📋 История действий</h3>
+<h3 class="section-title">🏆 Достижения</h3>
+<div id="achievementsGrid"></div>
+<h3 class="section-title">📋 История действий</h3>
 <div id="historyList"></div>
 </div>
 
 <div class="page" id="page-phishing">
 <div class="header"><button class="back-btn" onclick="showPage('home')"><i class="fas fa-arrow-left"></i> На главную</button><h1>📧 <span>Симулятор фишинга</span></h1></div>
-<p style="color:var(--text-secondary);margin-bottom:24px">Проанализируй письмо и определи: это настоящее письмо или фишинг?</p>
+<p class="page-desc">Проанализируй письмо и определи: это настоящее письмо или фишинг?</p>
 <div id="phishingGame"></div>
-<div class="result-box info" style="margin-top:24px">
-<h3 style="margin-bottom:12px"><i class="fas fa-shield-halved" style="color:var(--accent)"></i> Как распознать фишинг</h3>
-<div class="tips-grid" style="margin-top:0">
+<div class="result-box info">
+<h3><i class="fas fa-shield-halved" style="color:var(--accent)"></i> Как распознать фишинг</h3>
+<div class="tips-grid">
 <div class="tip-card"><div class="tip-icon">🔍</div><h4>Проверяй адрес отправителя</h4><p>Мошенники используют похожие адреса: support@g0ogle.com, bank@secruity.ru</p></div>
 <div class="tip-card"><div class="tip-icon">⏰</div><h4>Срочность и угрозы</h4><p>«Ваш аккаунт будет заблокирован через 24 часа» — классический приём давления</p></div>
 <div class="tip-card"><div class="tip-icon">🔗</div><h4>Подозрительные ссылки</h4><p>Наведи курсор на ссылку, не кликая. Если адрес не совпадает с названием — это фишинг</p></div>
