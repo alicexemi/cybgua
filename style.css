@@ -1,0 +1,30 @@
+/* Добавьте это в конец style.css или обновите соответствующие секции */
+
+.answer-letter {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: var(--neon-blue);
+    color: white;
+    margin-right: 15px;
+    font-weight: bold;
+    flex-shrink: 0;
+}
+
+.achievement-popup.hide {
+    animation: fadeOut 0.5s forwards;
+}
+
+@keyframes fadeOut {
+    to { opacity: 0; transform: translateY(-20px); }
+}
+
+/* Фикс для отображения результатов категорий */
+#category-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
