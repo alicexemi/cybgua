@@ -1,0 +1,355 @@
+/* ========================
+CSS ПЕРЕМЕННЫЕ — СВЕТЛАЯ ТЕМА
+======================== */
+:root {
+  --bg-primary: #ffffff;
+  --bg-secondary: #f8f9fa;
+  --bg-card: #ffffff;
+  --bg-card-hover: #f5f7fa;
+  --border: #e0e0e0;
+  --gradient: linear-gradient(135deg, #0066ff 0%, #00aaff 100%);
+  --gradient2: linear-gradient(135deg, #4a90e2 0%, #2c7fe2 100%);
+  --text-primary: #1a1a2e;
+  --text-secondary: #666677;
+  --accent: #0066ff;
+  --success: #10b981;
+  --danger: #ef4444;
+  --shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  --font-main: 'Space Grotesk', sans-serif;
+  --font-ui: 'Outfit', sans-serif;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* Верхняя навигация */
+.top-nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  background: var(--bg-primary);
+  border-bottom: 1px solid var(--border);
+  z-index: 1000;
+  padding: 0;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.03);
+}
+
+.nav-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 24px;
+  gap: 20px;
+}
+
+.nav-logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--font-main);
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: -0.5px;
+}
+.nav-logo i {
+  font-size: 24px;
+  color: var(--accent);
+}
+
+.nav-menu {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex: 1;
+  justify-content: center;
+}
+
+.nav-btn {
+  padding: 8px 20px;
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-family: var(--font-ui);
+  font-size: 15px;
+  font-weight: 500;
+  border-radius: 30px;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+.nav-btn:hover {
+  background: rgba(74, 144, 226, 0.1);
+  color: var(--accent);
+}
+
+.nav-btn.active {
+  background: var(--gradient2);
+  color: white;
+  box-shadow: 0 4px 12px rgba(74, 144, 226, 0.3);
+}
+
+/* Основной контент */
+.main-content {
+  margin-top: 72px;
+  padding: 40px 20px;
+  max-width: 1200px;
+  margin-left: auto;
+  margin-right: auto;
+  font-family: var(--font-ui);
+}
+
+/* Hero Section */
+.hero-section {
+  text-align: center;
+  padding: 80px 20px 60px;
+}
+.hero-section h1 {
+  font-family: var(--font-main);
+  font-size: 64px;
+  font-weight: 800;
+  line-height: 1.1;
+  margin: 0 0 24px;
+  background: linear-gradient(90deg, var(--text-primary) 0%, #1a1a2e 70%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.hero-section h1 span {
+  background: var(--gradient);
+  -webkit-text-fill-color: transparent;
+}
+.hero-section p {
+  font-size: 18px;
+  color: var(--text-secondary);
+  max-width: 700px;
+  margin: 0 auto;
+  line-height: 1.6;
+}
+
+.btn-primary {
+  background: var(--gradient);
+  color: white;
+  border: none;
+  padding: 16px 48px;
+  font-size: 16px;
+  font-weight: 600;
+  border-radius: 30px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 6px 20px rgba(0, 102, 255, 0.3);
+  margin-top: 16px;
+}
+.btn-primary:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 25px rgba(0, 102, 255, 0.4);
+}
+
+.btn-outline {
+  background: transparent;
+  border: 2px solid var(--border);
+  color: var(--text-primary);
+  padding: 14px 40px;
+  font-size: 16px;
+  font-weight: 600;
+  border-radius: 30px;
+  margin-left: 16px;
+  transition: all 0.3s ease;
+}
+.btn-outline:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+/* Разделы — сетка */
+.sections-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 24px;
+  margin-top: 60px;
+}
+
+.section-card {
+  background: var(--bg-card);
+  border-radius: 16px;
+  padding: 32px 24px;
+  text-align: center;
+  border: 1px solid var(--border);
+  transition: all 0.3s ease;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+}
+.section-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.05);
+}
+.section-card i {
+  font-size: 48px;
+  color: var(--accent);
+  margin-bottom: 20px;
+}
+.section-card h3 {
+  font-size: 20px;
+  font-weight: 700;
+  margin: 0 0 12px;
+  color: var(--text-primary);
+}
+.section-card p {
+  font-size: 14px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+/* AI Game */
+.ai-game-container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 32px;
+  background: var(--bg-card);
+  border-radius: 16px;
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+}
+
+.game-img {
+  width: 100%;
+  max-width: 600px;
+  height: 400px;
+  object-fit: cover;
+  border-radius: 12px;
+  margin: 24px auto;
+  display: block;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.05);
+  border: 1px solid var(--border);
+}
+
+.game-header {
+  font-size: 16px;
+  color: var(--text-secondary);
+  margin-bottom: 16px;
+  text-align: center;
+}
+
+.game-actions {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  margin-top: 32px;
+  flex-wrap: wrap;
+}
+
+.game-actions .btn {
+  min-width: 160px;
+  padding: 14px 24px;
+  font-size: 16px;
+  font-weight: 600;
+  border-radius: 30px;
+  transition: all 0.3s ease;
+}
+
+.btn-danger {
+  background: var(--danger);
+  color: white;
+}
+.btn-danger:hover {
+  background: #dc2626;
+}
+
+.btn-success {
+  background: var(--success);
+  color: white;
+}
+.btn-success:hover {
+  background: #059669;
+}
+
+.clue {
+  background: rgba(74, 144, 226, 0.05);
+  border-left: 4px solid var(--accent);
+  padding: 16px 20px;
+  border-radius: 8px;
+  margin: 24px auto;
+  max-width: 600px;
+  font-size: 14px;
+  color: var(--text-secondary);
+  text-align: left;
+}
+
+.feedback {
+  padding: 24px;
+  border-radius: 12px;
+  margin: 24px auto;
+  max-width: 600px;
+  text-align: center;
+  font-size: 18px;
+  font-weight: 600;
+  background: rgba(0, 102, 255, 0.05);
+  border: 1px solid rgba(0, 102, 255, 0.2);
+  color: var(--text-primary);
+}
+
+.feedback.success { background: rgba(16, 185, 129, 0.1); border-color: rgba(16, 185, 129, 0.3); color: var(--success); }
+.feedback.error { background: rgba(239, 68, 68, 0.1); border-color: rgba(239, 68, 68, 0.3); color: var(--danger); }
+
+.result-score {
+  font-size: 32px;
+  font-weight: 800;
+  background: var(--gradient);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin: 24px auto;
+  text-align: center;
+}
+
+.result-grade {
+  font-size: 18px;
+  color: var(--text-secondary);
+  margin: 16px auto;
+  text-align: center;
+}
+
+.btn-next-round {
+  background: var(--gradient) !important;
+  color: #fff !important;
+  padding: 16px 40px !important;
+  font-size: 16px !important;
+  font-weight: 700 !important;
+  border: none !important;
+  border-radius: 30px !important;
+  box-shadow: 0 6px 20px rgba(0, 102, 255, 0.3) !important;
+  margin: 24px auto !important;
+  display: block !important;
+  transition: all 0.3s ease !important;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.btn-next-round:hover {
+  transform: translateY(-3px) !important;
+  box-shadow: 0 10px 30px rgba(0, 102, 255, 0.4) !important;
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+  .hero-section h1 { font-size: 48px; }
+  .nav-menu { display: none; }
+  .game-img { height: 320px; }
+  .section-card { padding: 24px 16px; }
+}
+
+@media (max-width: 480px) {
+  .hero-section h1 { font-size: 36px; }
+  .main-content { padding: 20px 12px; }
+  .btn-primary { padding: 14px 32px; font-size: 15px; }
+}
