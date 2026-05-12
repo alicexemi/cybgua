@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cyber Guard</title>
+    <link rel="stylesheet" href="style (2).css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <!-- Верхняя навигация вместо сайдбара -->
+    <nav class="top-nav">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <i class="fas fa-shield-alt"></i>
+                <span>Cyber Guard</span>
+            </div>
+            <div class="nav-menu">
+                <button class="nav-btn active" onclick="showPage('home')">
+                    <i class="fas fa-home"></i> Главная
+                </button>
+                <div class="nav-dropdown">
+                    <button class="nav-btn">
+                        <i class="fas fa-graduation-cap"></i> Обучение <i class="fas fa-chevron-down"></i>
+                    </button>
+                    <div class="dropdown-content">
+                        <a onclick="showPage('quiz')">Тест</a>
+                        <a onclick="showPage('ai-vs-real')">AI vs Real</a>
+                        <a onclick="showPage('phishing')">Симулятор фишинга</a>
+                    </div>
+                </div>
+                <div class="nav-dropdown">
+                    <button class="nav-btn">
+                        <i class="fas fa-tools"></i> Инструменты <i class="fas fa-chevron-down"></i>
+                    </button>
+                    <div class="dropdown-content">
+                        <a onclick="showPage('password')">Пароль</a>
+                        <a onclick="showPage('links')">Ссылки</a>
+                        <a onclick="showPage('scanner')">Сканер</a>
+                    </div>
+                </div>
+                <div class="nav-dropdown">
+                    <button class="nav-btn">
+                        <i class="fas fa-info-circle"></i> Информация <i class="fas fa-chevron-down"></i>
+                    </button>
+                    <div class="dropdown-content">
+                        <a onclick="showPage('memo')">Памятка</a>
+                        <a onclick="showPage('scammers')">Мошенники</a>
+                    </div>
+                </div>
+                <button class="nav-btn" onclick="showPage('cabinet')">
+                    <i class="fas fa-user"></i> Кабинет
+                </button>
+            </div>
+            <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()">
+                <i class="fas fa-moon" id="themeIcon"></i>
+            </button>
+        </div>
+    </nav>
+
+    <div class="main-content">
+        <!-- Остальной контент страниц -->
+        <div id="page-home" class="page active">
+            <div class="hero-section">
+                <h1>Добро пожаловать в <span>Cyber Guard</span></h1>
+                <p>Научись безопасно вести себя в интернете, распознавать мошенников и защищать свои данные. Выбирай раздел и начинай обучение!</p>
+                <div class="hero-buttons">
+                    <button class="btn btn-primary" onclick="showPage('quiz')">
+                        <i class="fas fa-play"></i> Начать тест
+                    </button>
+                    <button class="btn btn-secondary" onclick="showPage('memo')">
+                        <i class="fas fa-book"></i> Памятка
+                    </button>
+                </div>
+            </div>
+            
+            <h2 class="section-title">Разделы</h2>
+            <div class="cards-grid">
+                <div class="card" onclick="showPage('quiz')">
+                    <div class="card-icon purple">
+                        <i class="fas fa-gamepad"></i>
+                    </div>
+                    <h3>Тест</h3>
+                    <p>Проверь свои знания по кибербезопасности и получи сертификат</p>
+                </div>
+                
+                <div class="card" onclick="showPage('ai-vs-real')">
+                    <div class="card-icon cyan">
+                        <i class="fas fa-video"></i>
+                    </div>
+                    <h3>AI vs Real</h3>
+                    <p>Научись отличать реальные видео от сгенерированных нейросетями</p>
+                </div>
+                
+                <div class="card" onclick="showPage('password')">
+                    <div class="card-icon green">
+                        <i class="fas fa-lock"></i>
+                    </div>
+                    <h3>Пароль</h3>
+                    <p>Сгенерируй надёжный пароль с нужными параметрами</p>
+                </div>
+                
+                <div class="card" onclick="showPage('links')">
+                    <div class="card-icon orange">
+                        <i class="fas fa-link"></i>
+                    </div>
+                    <h3>Ссылки</h3>
+                    <p>Проверь ссылку на безопасность перед переходом</p>
+                </div>
+                
+                <div class="card" onclick="showPage('memo')">
+                    <div class="card-icon purple">
+                        <i class="fas fa-book-open"></i>
+                    </div>
+                    <h3>Памятка</h3>
+                    <p>Полезные советы по безопасности в интернете</p>
+                </div>
+                
+                <div class="card" onclick="showPage('scammers')">
+                    <div class="card-icon red">
+                        <i class="fas fa-exclamation-triangle"></i>
+                    </div>
+                    <h3>Мошенники</h3>
+                    <p>Узнай виды мошенников и как им противостоять</p>
+                </div>
+                
+                <div class="card" onclick="showPage('scanner')">
+                    <div class="card-icon red">
+                        <i class="fas fa-file-shield"></i>
+                    </div>
+                    <h3>Сканер</h3>
+                    <p>Проверь файл на вирусы и вредоносное ПО</p>
+                </div>
+                
+                <div class="card" onclick="showPage('phishing')">
+                    <div class="card-icon cyan">
+                        <i class="fas fa-envelope"></i>
+                    </div>
+                    <h3>Фишинг</h3>
+                    <p>Научись распознавать фишинговые письма</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- AI vs Real Section -->
+        <div id="page-ai-vs-real" class="page">
+            <div class="header">
+                <button class="back-btn" onclick="showPage('home')">
+                    <i class="fas fa-arrow-left"></i> На главную
+                </button>
+                <h1>🎬 <span>AI vs Real</span></h1>
+                <p class="page-desc">Посмотри на изображение и попробуй определить: это реальное фото или сгенерировано нейросетью?</p>
+            </div>
+            
+            <div class="ai-game-container">
+                <div id="aiGameArea">
+                    <!-- Игра загружается через JavaScript -->
+                </div>
+            </div>
+            
+            <div class="tips-section">
+                <h3 class="section-title">Как отличить фейк?</h3>
+                <div class="tips-grid">
+                    <div class="tip-card">
+                        <div class="tip-icon">👁️</div>
+                        <h4>Обрати внимание на глаза</h4>
+                        <p>У нейросетей часто получаются неестественные зрачки, разный размер глаз или странное отражение</p>
+                    </div>
+                    <div class="tip-card">
+                        <div class="tip-icon">🖐️</div>
+                        <h4>Посмотри на руки и пальцы</h4>
+                        <p>Нейросети часто рисуют лишние или недостающие пальцы, неестественные суставы</p>
+                    </div>
+                    <div class="tip-card">
+                        <div class="tip-icon">📝</div>
+                        <h4>Проверь текст на изображении</h4>
+                        <p>Надписи на AI-картинках часто содержат бессмысленные символы или искажённые буквы</p>
+                    </div>
+                    <div class="tip-card">
+                        <div class="tip-icon">🌊</div>
+                        <h4>Фон и детали</h4>
+                        <p>Размытый или нелогичный фон, странные тени и отражения — признаки генерации</p>
+                    </div>
+                    <div class="tip-card">
+                        <div class="tip-icon">👂</div>
+                        <h4>Уши и аксессуары</h4>
+                        <p>Асимметричные уши, странные серьги или неправильно надетые очки</p>
+                    </div>
+                    <div class="tip-card">
+                        <div class="tip-icon">🔍</div>
+                        <h4>Общая реалистичность</h4>
+                        <p>Слишком идеальная кожа, неестественные пропорции тела или странные текстуры</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Остальные страницы... -->
+        
+    </div>
+
+    <div class="cookie-banner" id="cookieBanner">
+        <p>🍪 Этот сайт использует cookie-файлы и localStorage для сохранения вашего прогресса, достижений и настроек. Продолжая использовать сайт, вы соглашаетесь с этим.</p>
+        <div class="cookie-btns">
+            <button class="btn btn-primary btn-sm" onclick="acceptCookies()">Принять</button>
+            <button class="btn btn-secondary btn-sm" onclick="declineCookies()">Отклонить</button>
+        </div>
+    </div>
+
+    <div class="badge-popup" id="badgePopup">
+        <div class="bp-icon" id="bpIcon"></div>
+        <div class="bp-text">
+            <h4 id="bpTitle"></h4>
+            <p id="bpDesc"></p>
+        </div>
+    </div>
+
+    <div class="confetti-container" id="confettiContainer"></div>
+
+    <script src="script (3).js"></script>
+</body>
+</html>
