@@ -200,7 +200,7 @@ function resetQuiz() {
 function renderAchievements() {
     const grid = document.getElementById('achievements-grid');
     if (!grid) return;
-    // ИСПРАВЛЕНО: def = > заменено на def =>
+    // ИСПРАВЛЕНО: def = > заменено на def =>, убраны лишние пробелы в классах
     grid.innerHTML = achievementDefs.map(def => `
          <div class="achievement ${state.achievements[def.id] ? 'unlocked' : ''}">
              <span>${def.icon}</span>
