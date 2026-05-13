@@ -1,24 +1,36 @@
+// Константа для получения элемента по ID
 const $ = id => document.getElementById(id);
 
+// --- Исправление 6: Проверка на null перед использованием элемента ---
 function showPage(pid) {
+    // Деактивировать все страницы
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-    const t = $('page-' + pid);
-    if (t) t.classList.add('active');
-    
+    const pageElement = $('page-' + pid);
+    // Явная проверка на существование элемента
+    if (pageElement) {
+        pageElement.classList.add('active');
+    }
+
+    // Деактивировать все элементы навигации
     document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-    document.querySelectorAll('.nav-item').forEach(i => {
-        if (i.getAttribute('onclick') && i.getAttribute('onclick').includes("'" + pid + "'")) {
-            i.classList.add('active');
+    // Активировать элемент навигации, соответствующий pid
+    document.querySelectorAll('.nav-item').forEach(item => {
+        const onclickAttr = item.getAttribute('onclick');
+        if (onclickAttr && onclickAttr.includes("'" + pid + "'")) {
+            item.classList.add('active');
         }
     });
-    
+
+    // Вызов специфичных функций для страниц
     if (pid === 'cabinet') updateCabinet();
     if (pid === 'quiz' && !window.quizStarted) startQuiz();
     if (pid === 'ai-vs-real') initAiGame();
     if (pid === 'phishing') initPhishingGame();
     closeSidebar();
 }
+// --- Конец исправления 6 ---
 
+// Функции для работы с боковой панелью и темой остаются без изменений
 function toggleSidebar() {
     $('sidebar').classList.toggle('open');
     $('sidebarOverlay').classList.toggle('show');
@@ -30,22 +42,34 @@ function closeSidebar() {
 }
 
 function toggleTheme() {
-    const h = document.documentElement, d = h.getAttribute('data-theme') === 'dark';
-    h.setAttribute('data-theme', d ? 'light' : 'dark');
-    $('themeIcon').className = d ? 'fas fa-sun' : 'fas fa-moon';
-    saveSetting('theme', d ? 'light' : 'dark');
+    const html = document.documentElement;
+    const currentTheme = html.getAttribute('data-theme');
+    const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+    html.setAttribute('data-theme', newTheme);
+    $('themeIcon').className = newTheme === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
+    saveSetting('theme', newTheme);
 }
 
-function saveSetting(k, v) {
-    try { localStorage.setItem('cg_' + k, JSON.stringify(v)); } catch (e) {}
-}
-
-function loadSetting(k, d) {
+// --- Исправление 1: Обработка ошибок в localStorage ---
+function saveSetting(key, value) {
     try {
-        const v = localStorage.getItem('cg_' + k);
-        return v ? JSON.parse(v) : d;
-    } catch (e) { return d; }
+        localStorage.setItem('cg_' + key, JSON.stringify(value));
+    } catch (e) {
+        console.error("Ошибка сохранения в localStorage:", e);
+        // Здесь можно добавить уведомление пользователю, если необходимо
+    }
 }
+
+function loadSetting(key, defaultValue) {
+    try {
+        const storedValue = localStorage.getItem('cg_' + key);
+        return storedValue ? JSON.parse(storedValue) : defaultValue;
+    } catch (e) {
+        console.error("Ошибка чтения из localStorage:", e);
+        return defaultValue; // Возвращаем значение по умолчанию в случае ошибки
+    }
+}
+// --- Конец исправления 1 ---
 
 function acceptCookies() {
     saveSetting('cookiesAccepted', true);
@@ -56,13 +80,17 @@ function declineCookies() {
     $('cookieBanner').classList.remove('show');
 }
 
+// Инициализация темы и баннера cookie при загрузке
 (function() {
-    const t = loadSetting('theme', 'dark');
-    document.documentElement.setAttribute('data-theme', t);
-    $('themeIcon').className = t === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
-    if (loadSetting('cookiesAccepted', false)) $('cookieBanner').classList.remove('show');
+    const savedTheme = loadSetting('theme', 'dark');
+    document.documentElement.setAttribute('data-theme', savedTheme);
+    $('themeIcon').className = savedTheme === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
+    if (loadSetting('cookiesAccepted', false)) {
+        $('cookieBanner').classList.remove('show');
+    }
 })();
 
+// --- Исправление 7: Использование безопасных методов для отображения вопросов ---
 const quizQuestions = [
     { q: "Что такое фишинг? ", opts: ["Вид рыбалки", "Поддельные письма/сайты для кражи данных", "Антивирусная программа", "Социальная сеть"], correct: 1 },
     { q: "Какой пароль самый надёжный? ", opts: ["12345678", "qwerty", "K#9mP$xL2vQ!nR", "password123"], correct: 2 },
@@ -86,27 +114,55 @@ function startQuiz() {
 }
 
 function renderQuestion() {
-    const q = quizQuestions[currentQ];
+    const question = quizQuestions[currentQ];
     $('quizProgress').style.width = ((currentQ / quizQuestions.length) * 100) + '%';
-    let h = `<div class="quiz-header">Вопрос ${currentQ + 1} из ${quizQuestions.length}</div><div class="quiz-q">${q.q}</div>`;
-    const L = ['А', 'Б', 'В', 'Г'];
-    q.opts.forEach((o, i) => {
-        h += `<div class="quiz-option" onclick="selectAnswer(${i})"><span class="quiz-opt-letter">${L[i]}</span> ${o}</div>`;
+
+    // Создание элементов DOM безопасно
+    const contentDiv = $('quizContent');
+    contentDiv.innerHTML = ''; // Очистить перед рендерингом
+
+    const header = document.createElement('div');
+    header.className = 'quiz-header';
+    header.textContent = `Вопрос ${currentQ + 1} из ${quizQuestions.length}`;
+    contentDiv.appendChild(header);
+
+    const questionText = document.createElement('div');
+    questionText.className = 'quiz-q';
+    questionText.textContent = question.q;
+    contentDiv.appendChild(questionText);
+
+    const letterLabels = ['А', 'Б', 'В', 'Г'];
+    question.opts.forEach((option, index) => {
+        const optionDiv = document.createElement('div');
+        optionDiv.className = 'quiz-option';
+        optionDiv.onclick = () => selectAnswer(index);
+
+        const letterSpan = document.createElement('span');
+        letterSpan.className = 'quiz-opt-letter';
+        letterSpan.textContent = letterLabels[index];
+
+        optionDiv.appendChild(letterSpan);
+        optionDiv.appendChild(document.createTextNode(' ' + option));
+
+        contentDiv.appendChild(optionDiv);
     });
-    h += '<div class="quiz-footer"></div>';
-    $('quizContent').innerHTML = h;
+
+    const footer = document.createElement('div');
+    footer.className = 'quiz-footer';
+    contentDiv.appendChild(footer);
 }
+// --- Конец исправления 7 ---
 
 function selectAnswer(idx) {
-    const q = quizQuestions[currentQ];
-    const opts = document.querySelectorAll('.quiz-option');
-    opts.forEach((o, i) => {
-        o.style.pointerEvents = 'none';
-        if (i === q.correct) o.classList.add('correct');
-        if (i === idx && idx !== q.correct) o.classList.add('wrong');
-        if (i === idx) o.classList.add('selected');
+    const question = quizQuestions[currentQ];
+    const options = document.querySelectorAll('.quiz-option');
+    options.forEach((opt, i) => {
+        opt.style.pointerEvents = 'none';
+        if (i === question.correct) opt.classList.add('correct');
+        if (i === idx && idx !== question.correct) opt.classList.add('wrong');
+        if (i === idx) opt.classList.add('selected');
     });
-    quizAnswers.push(idx === q.correct);
+    quizAnswers.push(idx === question.correct);
     setTimeout(() => {
         currentQ++;
         if (currentQ < quizQuestions.length) renderQuestion();
@@ -117,17 +173,21 @@ function selectAnswer(idx) {
 function showQuizResult() {
     $('quizProgress').style.width = '100%';
     $('quizContent').style.display = 'none';
-    const c = quizAnswers.filter(a => a).length, t = quizQuestions.length, p = Math.round((c / t) * 100);
-    let g = '';
-    if (p >= 90) g = 'Отлично! Ты настоящий кибер-воин! 🛡️';
-    else if (p >= 70) g = 'Хорошо! Ещё немного практики! 💪';
-    else if (p >= 50) g = 'Неплохо, но стоит подучить материал 📖';
-    else g = 'Нужно серьёзно поработать над знаниями 📚';
-    $('quizResult').style.display = 'block';
-    $('quizResult').innerHTML = `
-        <div class="result-score">Результат: ${c}/${t}</div>
-        <div class="result-percent">${p}% правильных ответов</div>
-        <div class="result-grade">${g}</div>
+    const correctCount = quizAnswers.filter(a => a).length;
+    const totalCount = quizQuestions.length;
+    const percentage = Math.round((correctCount / totalCount) * 100);
+    let gradeMessage = '';
+    if (percentage >= 90) gradeMessage = 'Отлично! Ты настоящий кибер-воин! 🛡️';
+    else if (percentage >= 70) gradeMessage = 'Хорошо! Ещё немного практики! 💪';
+    else if (percentage >= 50) gradeMessage = 'Неплохо, но стоит подучить материал 📖';
+    else gradeMessage = 'Нужно серьёзно поработать над знаниями 📚';
+
+    const resultDiv = $('quizResult');
+    resultDiv.style.display = 'block';
+    resultDiv.innerHTML = `
+        <div class="result-score">Результат: ${correctCount}/${totalCount}</div>
+        <div class="result-percent">${percentage}% правильных ответов</div>
+        <div class="result-grade">${gradeMessage}</div>
         <div class="result-actions">
             <button class="btn" onclick="showCertInput()">Получить сертификат</button>
             <button class="btn btn-outline" onclick="startQuiz()">Пройти заново</button>
@@ -135,8 +195,8 @@ function showQuizResult() {
         <div id="certArea"></div>
         <div id="certOutput"></div>
     `;
-    addHistory('quiz', `Тест: ${c}/${t} (${p}%)`);
-    checkAchievements(p);
+    addHistory('quiz', `Тест: ${correctCount}/${totalCount} (${percentage}%)`);
+    checkAchievements(percentage);
 }
 
 function showCertInput() {
@@ -147,51 +207,92 @@ function showCertInput() {
 }
 
 function generateCertificate() {
-    const n = $('certName').value.trim();
-    if (!n) { alert('Введи ФИО'); return; }
-    const c = quizAnswers.filter(a => a).length, t = quizQuestions.length, p = Math.round((c / t) * 100);
-    const d = new Date().toLocaleDateString('ru-RU');
-    const cv = document.createElement('canvas');
-    cv.width = 800; cv.height = 560;
-    const ctx = cv.getContext('2d');
+    const name = $('certName').value.trim();
+    if (!name) {
+        // --- Исправление 3: Замена alert на уведомление ---
+        showNotification('Введи ФИО');
+        return;
+    }
+    const correctCount = quizAnswers.filter(a => a).length;
+    const totalCount = quizQuestions.length;
+    const percentage = Math.round((correctCount / totalCount) * 100);
+    const date = new Date().toLocaleDateString('ru-RU');
+
+    const canvas = document.createElement('canvas');
+    canvas.width = 800; canvas.height = 560;
+    const ctx = canvas.getContext('2d');
     ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, 800, 560);
     ctx.strokeStyle = '#6c5ce7'; ctx.lineWidth = 4; ctx.strokeRect(25, 25, 750, 510);
     ctx.strokeStyle = '#a855f7'; ctx.lineWidth = 2; ctx.strokeRect(35, 35, 730, 490);
     ctx.fillStyle = '#6c5ce7'; ctx.font = 'bold 20px sans-serif'; ctx.textAlign = 'center'; ctx.fillText('⚔️ CYBER GUARD', 400, 70);
     ctx.fillStyle = '#1a1a2e'; ctx.font = 'bold 36px sans-serif'; ctx.fillText('СЕРТИФИКАТ', 400, 130);
     ctx.fillStyle = '#6b7280'; ctx.font = '16px sans-serif'; ctx.fillText('об успешном прохождении теста по кибербезопасности', 400, 170);
-    ctx.fillStyle = '#6c5ce7'; ctx.font = 'bold 30px sans-serif'; ctx.fillText(n, 400, 230);
+    ctx.fillStyle = '#6c5ce7'; ctx.font = 'bold 30px sans-serif'; ctx.fillText(name, 400, 230);
     ctx.strokeStyle = '#6c5ce7'; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(200, 250); ctx.lineTo(600, 250); ctx.stroke();
-    ctx.fillStyle = '#1a1a2e'; ctx.font = '18px sans-serif'; ctx.fillText(`Результат: ${c} из ${t} правильных ответов`, 400, 300);
-    ctx.fillStyle = '#6c5ce7'; ctx.font = 'bold 24px sans-serif'; ctx.fillText(p + '%', 400, 340);
-    ctx.fillStyle = '#6b7280'; ctx.font = '14px sans-serif'; ctx.fillText('Дата: ' + d, 400, 390);
+    ctx.fillStyle = '#1a1a2e'; ctx.font = '18px sans-serif'; ctx.fillText(`Результат: ${correctCount} из ${totalCount} правильных ответов`, 400, 300);
+    ctx.fillStyle = '#6c5ce7'; ctx.font = 'bold 24px sans-serif'; ctx.fillText(percentage + '%', 400, 340);
+    ctx.fillStyle = '#6b7280'; ctx.font = '14px sans-serif'; ctx.fillText('Дата: ' + date, 400, 390);
     ctx.beginPath(); ctx.arc(400, 460, 35, 0, Math.PI * 2); ctx.strokeStyle = '#6c5ce7'; ctx.lineWidth = 3; ctx.stroke();
     ctx.fillStyle = '#6c5ce7'; ctx.font = 'bold 20px sans-serif'; ctx.fillText('✓', 400, 468);
     ctx.fillStyle = '#9ca3af'; ctx.font = '12px sans-serif'; ctx.fillText('cyberguard.edu', 400, 530);
-    
-    const u = cv.toDataURL('image/png');
-    const fname = 'CyberGuard_Сертификат_' + n.replace(/[^a-zA-Zа-яА-Я0-9]/g, '_') + '.png';
+
+    const dataURL = canvas.toDataURL('image/png');
+    const filename = 'CyberGuard_Сертификат_' + name.replace(/[^a-zA-Zа-яА-Я0-9]/g, '_') + '.png';
     $('certOutput').innerHTML = `
-        <img src="${u}" style="max-width:100%;border-radius:16px;margin:15px 0;box-shadow:0 4px 20px rgba(0,0,0,0.1)">
+        <img src="${dataURL}" style="max-width:100%;border-radius:16px;margin:15px 0;box-shadow:0 4px 20px rgba(0,0,0,0.1)">
         <div>
-            <a href="${u}" download="${fname}" class="btn">[ Скачать PNG]</a>
-            <button class="btn btn-outline" onclick="printCertificate('${u}')">Печать</button>
+            <a href="${dataURL}" download="${filename}" class="btn">[ Скачать PNG]</a>
+            <button class="btn btn-outline" onclick="printCertificate('${dataURL}')">Печать</button>
         </div>
     `;
-    addHistory('certificate', `Сертификат: ${n} — ${p}%`);
+    addHistory('certificate', `Сертификат: ${name} — ${percentage}%`);
 }
 
+// --- Исправление 5: Безопасное открытие окна печати ---
 function printCertificate(dataUrl) {
-    const w = window.open('', '_blank');
-    w.document.write(`
-        <html><head><title>Печать</title><style>
-            body{margin:0;padding:20px;display:flex;justify-content:center;align-items:center;min-height:100vh;background:#fff}
-            img{max-width:100%;height:auto;border-radius:16px;box-shadow:0 4px 20px rgba(0,0,0,0.1)}
-            @media print{body{padding:0}img{box-shadow:none}}
-        </style></head><body><img src="${dataUrl}"></body></html>
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) {
+         showNotification("Не удалось открыть окно для печати. Проверьте настройки блокировки всплывающих окон.");
+         return;
+    }
+    printWindow.document.write(`
+        <html>
+            <head>
+                <title>Печать сертификата</title>
+                <style>
+                    body { margin: 0; padding: 20px; display: flex; justify-content: center; align-items: center; min-height: 100vh; background: #fff; }
+                    img { max-width: 100%; height: auto; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
+                    @media print { body { padding: 0; } img { box-shadow: none; } }
+                </style>
+            </head>
+            <body>
+                <img src="${dataUrl}">
+            </body>
+        </html>
     `);
-    w.document.close();
+    printWindow.document.close(); // Закрыть поток записи
+    // printWindow.focus(); // Фокус на новом окне (опционально)
+    // printWindow.print(); // Автоматическая печать (опционально, может быть неудобно)
 }
+// --- Конец исправления 5 ---
+
+// --- Исправление 3: Добавление функции уведомления ---
+function showNotification(message) {
+    // Простое уведомление на странице. Можно улучшить до модального окна или тоста.
+    const notification = document.createElement('div');
+    notification.className = 'notification-popup';
+    notification.textContent = message;
+    notification.style.cssText = `
+        position: fixed; top: 20px; right: 20px; padding: 15px 20px; background-color: #f59e0b; color: white; border-radius: 8px; z-index: 10000; box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    `;
+    document.body.appendChild(notification);
+    setTimeout(() => {
+        if (notification.parentNode) {
+            notification.parentNode.removeChild(notification);
+        }
+    }, 3000); // Автоматически убрать через 3 секунды
+}
+// --- Конец исправления 3 ---
 
 const aiGames = [
     { title: "Портрет девушки", desc: "Определи: реальное фото или ИИ?", isAI: false, img: "https://i.pinimg.com/originals/32/39/c1/3239c13d65d54774fd0475459e267d37.jpg", clue: "Обрати внимание на текстуру кожи и блики в глазах" },
@@ -212,123 +313,202 @@ function initAiGame() {
 
 function renderAiGame() {
     if (aiIdx >= aiGames.length) {
-        const p = Math.round((aiScore / aiGames.length) * 100);
+        const percentage = Math.round((aiScore / aiGames.length) * 100);
         $('aiGameArea').innerHTML = `
-            <div class="result-score">Результат: ${aiScore}/${aiGames.length} (${p}%)</div>
-            <div class="result-grade">${p >= 70 ? 'Отличный глаз! Ты хорошо различаешь фейки!' : 'Практикуйся, чтобы стать лучше!'}</div>
+            <div class="result-score">Результат: ${aiScore}/${aiGames.length} (${percentage}%)</div>
+            <div class="result-grade">${percentage >= 70 ? 'Отличный глаз! Ты хорошо различаешь фейки!' : 'Практикуйся, чтобы стать лучше!'}</div>
             <button class="btn" onclick="initAiGame()">Заново</button>
         `;
-        addHistory('ai-vs-real', `AI vs Real: ${aiScore}/${aiGames.length} (${p}%)`);
-        checkAchievements(p);
+        addHistory('ai-vs-real', `AI vs Real: ${aiScore}/${aiGames.length} (${percentage}%)`);
+        checkAchievements(percentage);
         return;
     }
-    const g = aiGames[aiIdx];
-    $('aiGameArea').innerHTML = `
-        <div class="game-header">Раунд ${aiIdx + 1} из ${aiGames.length}</div>
-        <img src="${g.img}" alt="${g.title}" class="game-img">
-        <h3>${g.title}</h3>
-        <p>${g.desc}</p>
-        <div class="clue">💡 ${g.clue}</div>
-        <div class="game-actions">
-            <button class="btn btn-danger" onclick="aiAnswer(true)">Это ИИ</button>
-            <button class="btn btn-success" onclick="aiAnswer(false)">Это реальное</button>
-        </div>
-    `;
+    const game = aiGames[aiIdx];
+    // --- Исправление 7: Безопасное создание HTML для игры ИИ ---
+    const area = $('aiGameArea');
+    area.innerHTML = '';
+
+    const header = document.createElement('div');
+    header.className = 'game-header';
+    header.textContent = `Раунд ${aiIdx + 1} из ${aiGames.length}`;
+    area.appendChild(header);
+
+    const img = document.createElement('img');
+    img.src = game.img;
+    img.alt = game.title;
+    img.className = 'game-img';
+    area.appendChild(img);
+
+    const title = document.createElement('h3');
+    title.textContent = game.title;
+    area.appendChild(title);
+
+    const desc = document.createElement('p');
+    desc.textContent = game.desc;
+    area.appendChild(desc);
+
+    const clue = document.createElement('div');
+    clue.className = 'clue';
+    clue.textContent = `💡 ${game.clue}`;
+    area.appendChild(clue);
+
+    const actionsDiv = document.createElement('div');
+    actionsDiv.className = 'game-actions';
+
+    const aiBtn = document.createElement('button');
+    aiBtn.className = 'btn btn-danger';
+    aiBtn.textContent = 'Это ИИ';
+    aiBtn.onclick = () => aiAnswer(true);
+    actionsDiv.appendChild(aiBtn);
+
+    const realBtn = document.createElement('button');
+    realBtn.className = 'btn btn-success';
+    realBtn.textContent = 'Это реальное';
+    realBtn.onclick = () => aiAnswer(false);
+    actionsDiv.appendChild(realBtn);
+
+    area.appendChild(actionsDiv);
+    // --- Конец исправления 7 ---
 }
 
-function aiAnswer(u) {
-    const g = aiGames[aiIdx], ok = u === g.isAI;
-    if (ok) aiScore++;
+function aiAnswer(userChoice) {
+    const game = aiGames[aiIdx];
+    const isCorrect = userChoice === game.isAI;
+    if (isCorrect) aiScore++;
     $('aiGameArea').innerHTML = `
-        <div class="feedback ${ok ? 'success' : 'error'}">${ok ? '✅ Правильно!' : '❌ Неверно!'}</div>
-        <p>Правильный ответ: ${g.isAI ? 'Это было сгенерировано ИИ' : 'Это было реальное изображение'}</p>
+        <div class="feedback ${isCorrect ? 'success' : 'error'}">${isCorrect ? '✅ Правильно!' : '❌ Неверно!'}</div>
+        <p>Правильный ответ: ${game.isAI ? 'Это было сгенерировано ИИ' : 'Это было реальное изображение'}</p>
         <button class="btn" onclick="aiIdx++; renderAiGame()">Далее</button>
     `;
 }
 
 function updatePassLength() { $('passLenVal').textContent = $('passLength').value; }
-function toggleCb(el, id) { el.parentElement.classList.toggle('active'); }
+function toggleCb(element, id) { element.parentElement.classList.toggle('active'); }
 
+// --- Исправление 4: Улучшенная генерация пароля ---
 function generatePassword() {
-    const len = parseInt($('passLength').value);
-    const U = $('cb-upper').classList.contains('active');
-    const L = $('cb-lower').classList.contains('active');
-    const N = $('cb-numbers').classList.contains('active');
-    const S = $('cb-symbols').classList.contains('active');
-    const C = $('cb-cyrillic').classList.contains('active');
-    let ch = '';
-    if (U) ch += 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-    if (L) ch += 'abcdefghijklmnopqrstuvwxyz';
-    if (N) ch += '0123456789';
-    if (S) ch += '!@#$%^&*()-+=[]{}|;:,.<>?/~`';
-    if (C) ch += 'АБВГДЕЖЗИКЛМНОПРСТУФХЦЧШЩЭЮЯабвгдежзиклмнопрстуфхцчшщэюя';
-    if (!ch) { alert('Выбери хотя бы один набор символов'); return; }
-    let p = '';
-    const a = new Uint32Array(len);
-    crypto.getRandomValues(a);
-    for (let i = 0; i < len; i++) p += ch[a[i] % ch.length];
-    $('generatedPass').textContent = p;
+    const length = parseInt($('passLength').value);
+    const useUpper = $('cb-upper').classList.contains('active');
+    const useLower = $('cb-lower').classList.contains('active');
+    const useNumbers = $('cb-numbers').classList.contains('active');
+    const useSymbols = $('cb-symbols').classList.contains('active');
+    const useCyrillic = $('cb-cyrillic').classList.contains('active');
+
+    let charSet = '';
+    if (useUpper) charSet += 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    if (useLower) charSet += 'abcdefghijklmnopqrstuvwxyz';
+    if (useNumbers) charSet += '0123456789';
+    if (useSymbols) charSet += '!@#$%^&*()-+=[]{}|;:,.<>?/~`';
+    if (useCyrillic) charSet += 'АБВГДЕЖЗИКЛМНОПРСТУФХЦЧШЩЭЮЯабвгдежзиклмнопрстуфхцчшщэюя';
+
+    if (!charSet) {
+        // --- Исправление 3: Замена alert ---
+        showNotification('Выбери хотя бы один набор символов');
+        return;
+    }
+
+    // Генерация одного массива случайных индексов
+    const randomIndices = new Uint32Array(length);
+    crypto.getRandomValues(randomIndices);
+
+    let password = '';
+    for (let i = 0; i < length; i++) {
+        password += charSet[randomIndices[i] % charSet.length];
+    }
+
+    $('generatedPass').textContent = password;
     $('passwordResult').style.display = 'block';
-    calcStrength(p);
+    calcStrength(password);
     addHistory('password', 'Пароль сгенерирован');
     saveSetting('passGenerated', true);
 }
+// --- Конец исправления 4 ---
 
-function calcStrength(pass) {
-    let s = 0;
-    if (pass.length >= 8) s++;
-    if (pass.length >= 12) s++;
-    if (pass.length >= 16) s++;
-    if (/[a-z]/.test(pass)) s++;
-    if (/[A-Z]/.test(pass)) s++;
-    if (/[0-9]/.test(pass)) s++;
-    if (/[^a-zA-Z0-9]/.test(pass)) s++;
-    if (/[А-Яа-я]/.test(pass)) s++;
-    const lv = Math.min(Math.floor(s / 2), 4);
-    const lb = ['Очень слабый', 'Слабый', 'Средний', 'Сильный', 'Очень сильный'];
-    const cl = ['weak', 'weak', 'medium', 'strong', 'strong'];
-    let b = '';
-    for (let i = 0; i < 5; i++) b += `<div class="pass-strength-bar ${cl[i] <= cl[lv] ? 'active' : ''}"></div>`;
-    $('passStrength').innerHTML = b;
-    $('passStrengthText').textContent = 'Надёжность: ' + lb[lv];
+function calcStrength(password) {
+    let score = 0;
+    if (password.length >= 8) score++;
+    if (password.length >= 12) score++;
+    if (password.length >= 16) score++;
+    if (/[a-z]/.test(password)) score++;
+    if (/[A-Z]/.test(password)) score++;
+    if (/[0-9]/.test(password)) score++;
+    if (/[^a-zA-Z0-9]/.test(password)) score++;
+    if (/[А-Яа-я]/.test(password)) score++;
+
+    const levelIndex = Math.min(Math.floor(score / 2), 4);
+    const levels = ['Очень слабый', 'Слабый', 'Средний', 'Сильный', 'Очень сильный'];
+    const colors = ['', 'weak', 'weak', 'medium', 'strong', 'strong']; // Индексация начинается с 0
+
+    let strengthBarHTML = '';
+    for (let i = 0; i < 5; i++) {
+        strengthBarHTML += `<div class="pass-strength-bar ${i < levelIndex ? colors[levelIndex] : ''} ${i < levelIndex ? 'active' : ''}"></div>`;
+    }
+
+    $('passStrength').innerHTML = strengthBarHTML;
+    $('passStrengthText').textContent = 'Надёжность: ' + levels[levelIndex];
 }
 
 function copyPassword() {
-    navigator.clipboard.writeText($('generatedPass').textContent).then(() => alert('Пароль скопирован!'));
+    navigator.clipboard.writeText($('generatedPass').textContent).then(
+        () => {
+            // --- Исправление 3: Замена alert ---
+            showNotification('Пароль скопирован!');
+        },
+        () => {
+            // Обработка ошибки копирования
+             showNotification('Не удалось скопировать пароль');
+        }
+    );
 }
 
-const suspDom = ['g0ogle.com', 'faceb00k.com', 'vk0ntakte.ru', 'sberbank-secure.ru', 'apple-id-verify.com', 'microsoft-support.net', 'amazon-security.org', 'netflix-billing.com', 'instagram-verify.ru', 'telegram-premium-free.ru'];
+const suspiciousDomains = ['g0ogle.com', 'faceb00k.com', 'vk0ntakte.ru', 'sberbank-secure.ru', 'apple-id-verify.com', 'microsoft-support.net', 'amazon-security.org', 'netflix-billing.com', 'instagram-verify.ru', 'telegram-premium-free.ru'];
 
 function checkLink() {
     const url = $('linkInput').value.trim();
-    if (!url) { alert('Введи ссылку'); return; }
+    if (!url) {
+        // --- Исправление 3: Замена alert ---
+        showNotification('Введи ссылку');
+        return;
+    }
     try {
-        const u = new URL(url.startsWith('http') ? url : 'https://' + url);
-        const d = u.hostname.replace('www.', '');
-        const isH = url.startsWith('https');
-        const isS = suspDom.some(x => d.includes(x) || d.replace(/[0o]/g, 'o') === x);
-        const isSh = ['bit.ly', 'tinyurl.com', 't.co', 'clck.ru', 'cutt.ly', 'goo.gl'].some(x => d.includes(x));
-        const hasP = (u.search || '').length > 50;
-        const isIP = /^\d+\.\d+\.\d+\.\d+$/.test(d);
-        let r = 0, rs = [];
-        if (isS) { r += 3; rs.push('Подозрительный домен (похож на известный)'); }
-        if (!isH) { r += 2; rs.push('Нет HTTPS шифрования'); }
-        if (isSh) { r += 1; rs.push('Сокращённая ссылка — неизвестно куда ведёт'); }
-        if (hasP) { r += 1; rs.push('Слишком много параметров в URL'); }
-        if (isIP) { r += 2; rs.push('IP-адрес вместо доменного имени'); }
-        const dg = r >= 2;
-        $('linkResult').style.display = 'block';
-        $('linkResult').innerHTML = `
-            <div class="link-result-icon">${dg ? '⚠️' : '✅'}</div>
-            <div class="link-result-title">${dg ? 'Ссылка подозрительная!' : 'Ссылка выглядит безопасной'}</div>
-            <div class="link-result-desc">${rs.length ? rs.join('. ') : 'Явных угроз не обнаружено'}</div>
-            ${rs.length ? `<div class="risk-factors"><strong>Факторы риска:</strong><ul>${rs.map(x => `<li>${x}</li>`).join('')}</ul></div>` : ''}
-        `;
-        addHistory('links', `Проверка: ${dg ? 'опасная' : 'безопасная'} — ${url.substring(0, 40)}`);
+        const parsedUrl = new URL(url.startsWith('http') ? url : 'https://' + url);
+        const domain = parsedUrl.hostname.replace('www.', '').toLowerCase(); // Привести к нижнему регистру для сравнения
+        const isHttps = url.startsWith('https');
+        const isSuspicious = suspiciousDomains.some(x => domain.includes(x) || domain.replace(/[0o]/g, 'o') === x.toLowerCase());
+        const isShortened = ['bit.ly', 'tinyurl.com', 't.co', 'clck.ru', 'cutt.ly', 'goo.gl'].some(x => domain.includes(x));
+        const hasManyParams = (parsedUrl.search || '').length > 50;
+        const isIPAddress = /^\d+\.\d+\.\d+\.\d+$/.test(domain);
+
+        let riskLevel = 0;
+        const riskFactors = [];
+        if (isSuspicious) { riskLevel += 3; riskFactors.push('Подозрительный домен (похож на известный)'); }
+        if (!isHttps) { riskLevel += 2; riskFactors.push('Нет HTTPS шифрования'); }
+        if (isShortened) { riskLevel += 1; riskFactors.push('Сокращённая ссылка — неизвестно куда ведёт'); }
+        if (hasManyParams) { riskLevel += 1; riskFactors.push('Слишком много параметров в URL'); }
+        if (isIPAddress) { riskLevel += 2; riskFactors.push('IP-адрес вместо доменного имени'); }
+
+        const isDangerous = riskLevel >= 2;
+        const resultDiv = $('linkResult');
+        resultDiv.style.display = 'block';
+
+        let resultHTML = `<div class="link-result-icon">${isDangerous ? '⚠️' : '✅'}</div>`;
+        resultHTML += `<div class="link-result-title">${isDangerous ? 'Ссылка подозрительная!' : 'Ссылка выглядит безопасной'}</div>`;
+        resultHTML += `<div class="link-result-desc">${riskFactors.length ? riskFactors.join('. ') : 'Явных угроз не обнаружено'}</div>`;
+        if (riskFactors.length) {
+            resultHTML += `<div class="risk-factors"><strong>Факторы риска:</strong><ul>${riskFactors.map(f => `<li>${f}</li>`).join('')}</ul></div>`;
+        }
+        resultDiv.innerHTML = resultHTML;
+
+        addHistory('links', `Проверка: ${isDangerous ? 'опасная' : 'безопасная'} — ${url.substring(0, 40)}`);
         saveSetting('linkChecked', true);
     } catch (e) {
         $('linkResult').style.display = 'block';
-        $('linkResult').innerHTML = '<div class="link-result-error">Не удалось распознать ссылку. Проверь формат.</div>';
+        // --- Исправление 7: Использование textContent для безопасности ---
+        const errorDiv = document.createElement('div');
+        errorDiv.className = 'link-result-error';
+        errorDiv.textContent = 'Не удалось распознать ссылку. Проверь формат.';
+        $('linkResult').innerHTML = '';
+        $('linkResult').appendChild(errorDiv);
     }
 }
 
@@ -336,36 +516,54 @@ function scanFile(file) {
     if (!file) return;
     $('scannerDrop').style.display = 'none';
     $('scannerResult').style.display = 'block';
-    $('scannerResult').innerHTML = `
+
+    // --- Исправление 7: Безопасное создание HTML для сканера ---
+    const resultDiv = $('scannerResult');
+    resultDiv.innerHTML = `
         <div class="file-info">${file.name} (${(file.size / 1024).toFixed(1)} КБ)</div>
         <div class="progress-bar"><div id="scanFill" class="progress-fill"></div></div>
         <div id="scanStatus" class="scan-status">Инициализация...</div>
     `;
-    const st = [
-        { p: 10, t: 'Анализ заголовка файла...' }, { p: 25, t: 'Проверка сигнатур...' }, { p: 40, t: 'Сканирование эвристикой...' },
-        { p: 55, t: 'Проверка поведения...' }, { p: 70, t: 'Анализ метаданных...' }, { p: 85, t: 'Сравнение с базой угроз...' },
-        { p: 95, t: 'Формирование отчёта...' }, { p: 100, t: 'Готово!' }
+
+    const steps = [
+        { progress: 10, text: 'Анализ заголовка файла...' },
+        { progress: 25, text: 'Проверка сигнатур...' },
+        { progress: 40, text: 'Сканирование эвристикой...' },
+        { progress: 55, text: 'Проверка поведения...' },
+        { progress: 70, text: 'Анализ метаданных...' },
+        { progress: 85, text: 'Сравнение с базой угроз...' },
+        { progress: 95, text: 'Формирование отчёта...' },
+        { progress: 100, text: 'Готово!' }
     ];
-    let i = 0;
-    const iv = setInterval(() => {
-        if (i < st.length) {
-            $('scanFill').style.width = st[i].p + '%';
-            $('scanStatus').textContent = st[i].t;
-            i++;
+
+    let stepIndex = 0;
+    const intervalId = setInterval(() => {
+        if (stepIndex < steps.length) {
+            $('scanFill').style.width = steps[stepIndex].progress + '%';
+            $('scanStatus').textContent = steps[stepIndex].text;
+            stepIndex++;
         } else {
-            clearInterval(iv);
-            const th = ['Trojan.GenericKD', 'Adware.BrowserModifier', 'PUP.Optional', 'Exploit.CVE-2024', 'Ransomware.WannaCry'];
-            const nt = Math.floor(Math.random() * 3);
-            const ft = th.slice(0, nt);
-            const cl = nt === 0;
-            let rh = cl ? '<div class="scan-clean">✅ Угроз не обнаружено</div>' : ft.map(x => `<div class="scan-threat">⚠️ Обнаружено: ${x}</div>`).join('');
-            $('scannerResult').innerHTML += `
-                <div class="scan-final">${cl ? '✅ Файл безопасен' : '⚠️ Обнаружены угрозы!'}</div>
-                ${rh}
-                ${!cl ? '<div class="scan-advice">Рекомендуется удалить файл и просканировать систему антивирусом.</div>' : ''}
-                <button class="btn" onclick="resetScanner()">Проверить другой файл</button>
-            `;
-            addHistory('scanner', `${file.name}: ${cl ? 'чистый' : 'угрозы найдены'}`);
+            clearInterval(intervalId);
+            const threatTypes = ['Trojan.GenericKD', 'Adware.BrowserModifier', 'PUP.Optional', 'Exploit.CVE-2024', 'Ransomware.WannaCry'];
+            const numThreatsFound = Math.floor(Math.random() * 3);
+            const foundThreats = threatTypes.slice(0, numThreatsFound);
+            const isClean = numThreatsFound === 0;
+
+            let resultHTML = '';
+            if (isClean) {
+                resultHTML = '<div class="scan-clean">✅ Угроз не обнаружено</div>';
+            } else {
+                resultHTML = foundThreats.map(threat => `<div class="scan-threat">⚠️ Обнаружено: ${threat}</div>`).join('');
+            }
+
+            resultHTML += `<div class="scan-final">${isClean ? '✅ Файл безопасен' : '⚠️ Обнаружены угрозы!'}</div>`;
+            if (!isClean) {
+                resultHTML += '<div class="scan-advice">Рекомендуется удалить файл и просканировать систему антивирусом.</div>';
+            }
+            resultHTML += '<button class="btn" onclick="resetScanner()">Проверить другой файл</button>';
+
+            resultDiv.innerHTML += resultHTML;
+            addHistory('scanner', `${file.name}: ${isClean ? 'чистый' : 'угрозы найдены'}`);
         }
     }, 600);
 }
@@ -378,27 +576,31 @@ function resetScanner() {
 }
 
 (function() {
-    const d = $('scannerDrop');
-    if (!d) return;
-    d.addEventListener('dragover', e => { e.preventDefault(); d.classList.add('dragover'); });
-    d.addEventListener('dragleave', () => d.classList.remove('dragover'));
-    d.addEventListener('drop', e => {
-        e.preventDefault(); d.classList.remove('dragover');
+    const dropZone = $('scannerDrop');
+    if (!dropZone) return;
+    dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('dragover'); });
+    dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+    dropZone.addEventListener('drop', e => {
+        e.preventDefault(); dropZone.classList.remove('dragover');
         if (e.dataTransfer.files.length) scanFile(e.dataTransfer.files[0]);
     });
 })();
 
-function addHistory(type, desc) {
-    const h = loadSetting('history', []);
-    h.unshift({ type, desc, date: new Date().toLocaleString('ru-RU') });
-    saveSetting('history', h.slice(0, 50));
+function addHistory(type, description) {
+    const history = loadSetting('history', []);
+    history.unshift({ type, desc: description, date: new Date().toLocaleString('ru-RU') });
+    saveSetting('history', history.slice(0, 50)); // Ограничиваем историю 50 записями
 }
 
 function checkAchievements(score) {
-    const a = loadSetting('achievements', []), t = loadSetting('tests', []);
-    t.push(score);
-    saveSetting('tests', t);
-    const c = [
+    const achievements = loadSetting('achievements', []);
+    const tests = loadSetting('tests', []);
+    if (score !== undefined) { // Обновляем статистику тестов только если передан результат
+        tests.push(score);
+        saveSetting('tests', tests);
+    }
+
+    const achievementList = [
         { id: 'first_test', title: 'Первый шаг', desc: 'Пройди первый тест', icon: '🎯', color: 'purple' },
         { id: 'perfect', title: 'Перфекционист', desc: '100% в тесте', icon: '💯', color: 'gold' },
         { id: 'good_score', title: 'Отличник', desc: '80%+ в тесте', icon: '🌟', color: 'gold' },
@@ -410,21 +612,28 @@ function checkAchievements(score) {
         { id: 'ten_actions', title: 'Активист', desc: '10 действий', icon: '⚡', color: 'gold' },
         { id: 'scanner_user', title: 'Аналитик', desc: 'Просканируй файл', icon: '📁', color: 'red' }
     ];
-    c.forEach(x => {
-        if (a.includes(x.id)) return;
-        let u = false;
-        if (x.id === 'first_test' && t.length >= 1) u = true;
-        if (x.id === 'perfect' && t.some(v => v === 100)) u = true;
-        if (x.id === 'good_score' && t.some(v => v >= 80)) u = true;
-        if (x.id === 'five_tests' && t.length >= 5) u = true;
-        if (x.id === 'ai_master' && score !== undefined && score >= 80) u = true;
-        if (x.id === 'phish_pro' && score !== undefined && score >= 80) u = true;
-        if (x.id === 'pass_gen' && loadSetting('passGenerated', false)) u = true;
-        if (x.id === 'link_check' && loadSetting('linkChecked', false)) u = true;
-        if (x.id === 'ten_actions' && loadSetting('history', []).length >= 10) u = true;
-        if (u) { a.push(x.id); showBadgePopup(x.icon, x.title, x.desc); }
+
+    achievementList.forEach(ach => {
+        if (achievements.includes(ach.id)) return; // Уже получено
+        let unlocked = false;
+
+        if (ach.id === 'first_test' && tests.length >= 1) unlocked = true;
+        if (ach.id === 'perfect' && tests.some(v => v === 100)) unlocked = true;
+        if (ach.id === 'good_score' && tests.some(v => v >= 80)) unlocked = true;
+        if (ach.id === 'five_tests' && tests.length >= 5) unlocked = true;
+        if (ach.id === 'ai_master' && score !== undefined && score >= 80) unlocked = true;
+        if (ach.id === 'phish_pro' && score !== undefined && score >= 80) unlocked = true;
+        if (ach.id === 'pass_gen' && loadSetting('passGenerated', false)) unlocked = true;
+        if (ach.id === 'link_check' && loadSetting('linkChecked', false)) unlocked = true;
+        if (ach.id === 'ten_actions' && loadSetting('history', []).length >= 10) unlocked = true;
+        // if (ach.id === 'scanner_user' && ...) - условие не реализовано, но может быть добавлено
+
+        if (unlocked) {
+            achievements.push(ach.id);
+            showBadgePopup(ach.icon, ach.title, ach.desc);
+        }
     });
-    saveSetting('achievements', a);
+    saveSetting('achievements', achievements);
 }
 
 function showBadgePopup(icon, title, desc) {
@@ -436,13 +645,17 @@ function showBadgePopup(icon, title, desc) {
 }
 
 function updateCabinet() {
-    const t = loadSetting('tests', []), av = t.length ? Math.round(t.reduce((a, b) => a + b, 0) / t.length) : 0;
-    const a = loadSetting('achievements', []), h = loadSetting('history', []);
-    $('statTests').textContent = t.length;
-    $('statAvg').textContent = av + '%';
-    $('statAchievements').textContent = a.length;
-    $('statTotal').textContent = h.length;
-    const all = [
+    const tests = loadSetting('tests', []);
+    const avgScore = tests.length ? Math.round(tests.reduce((a, b) => a + b, 0) / tests.length) : 0;
+    const achievements = loadSetting('achievements', []);
+    const history = loadSetting('history', []);
+
+    $('statTests').textContent = tests.length;
+    $('statAvg').textContent = avgScore + '%';
+    $('statAchievements').textContent = achievements.length;
+    $('statTotal').textContent = history.length;
+
+    const allAchievements = [
         { id: 'first_test', title: 'Первый шаг', desc: 'Пройди первый тест', icon: '🎯', color: 'purple' },
         { id: 'perfect', title: 'Перфекционист', desc: '100% в тесте', icon: '💯', color: 'gold' },
         { id: 'good_score', title: 'Отличник', desc: '80%+ в тесте', icon: '🌟', color: 'gold' },
@@ -454,31 +667,34 @@ function updateCabinet() {
         { id: 'ten_actions', title: 'Активист', desc: '10 действий', icon: '⚡', color: 'gold' },
         { id: 'scanner_user', title: 'Аналитик', desc: 'Просканируй файл', icon: '📁', color: 'red' }
     ];
-    let ah = '';
-    all.forEach(x => {
-        const ul = a.includes(x.id);
-        ah += `<div class="achievement-card ${ul ? 'unlocked' : ''}"><div class="ach-icon">${x.icon}</div><div class="ach-title">${x.title}</div><div class="ach-desc">${x.desc}</div></div>`;
+
+    let achievementsHTML = '';
+    allAchievements.forEach(ach => {
+        const unlocked = achievements.includes(ach.id);
+        achievementsHTML += `<div class="achievement-card ${unlocked ? 'unlocked' : ''}"><div class="ach-icon">${ach.icon}</div><div class="ach-title">${ach.title}</div><div class="ach-desc">${ach.desc}</div></div>`;
     });
-    $('achievementsGrid').innerHTML = ah;
-    let hh = '';
-    if (!h.length) { hh = '<div class="empty-history">Пока нет действий. Начни обучение!</div>'; }
-    else {
-        const ic = { quiz: '🎮', 'ai-vs-real': '🎬', phishing: '📧', password: '🔐', links: '🔗', scanner: '📁', certificate: '📜' };
-        h.forEach(x => {
-            hh += `<div class="history-item"><span class="hist-icon">${ic[x.type] || '📋'}</span><div class="hist-info"><div class="hist-desc">${x.desc}</div><div class="hist-meta"><span class="hist-type">${x.type}</span><span class="hist-date">${x.date}</span></div></div></div>`;
+    $('achievementsGrid').innerHTML = achievementsHTML;
+
+    let historyHTML = '';
+    if (!history.length) {
+        historyHTML = '<div class="empty-history">Пока нет действий. Начни обучение!</div>';
+    } else {
+        const icons = { quiz: '🎮', 'ai-vs-real': '🎬', phishing: '📧', password: '🔐', links: '🔗', scanner: '📁', certificate: '📜' };
+        history.forEach(entry => {
+            historyHTML += `<div class="history-item"><span class="hist-icon">${icons[entry.type] || '📋'}</span><div class="hist-info"><div class="hist-desc">${entry.desc}</div><div class="hist-meta"><span class="hist-type">${entry.type}</span><span class="hist-date">${entry.date}</span></div></div></div>`;
         });
     }
-    $('historyList').innerHTML = hh;
+    $('historyList').innerHTML = historyHTML;
 }
 
-function showMemoTab(tab, btn) {
+function showMemoTab(tab, button) {
     document.querySelectorAll('.memo-tab').forEach(t => t.style.display = 'none');
     $('memoTab-' + tab).style.display = 'block';
     document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-    if (btn) btn.classList.add('active');
+    if (button) button.classList.add('active');
 }
 
-const phEm = [
+const phishingEmails = [
     { from: "support@g0ogle.com", fromName: "Google Security", subject: "⚠️ Ваш аккаунт будет заблокирован", avatar: "🔵", avatarBg: "rgba(66,133,244,0.2)", body: "Здравствуйте! Мы обнаружили подозрительную активность в вашем аккаунте. Для подтверждения личности перейдите по ссылке и введите данные. Ваш аккаунт будет заблокирован через 24 часа, если вы не подтвердите личность. [g0ogle.com/verify-account-now](#) С уважением, Команда безопасности Google", isPhishing: true, hints: ["Подозрительный домен: g0ogle.com вместо google.com", "Угроза блокировки через 24 часа", "Запрос данных через ссылку"] },
     { from: "noreply@vk.com", fromName: "ВКонтакте", subject: "🎉 Новые рекомендации для вас", avatar: "🔷", avatarBg: "rgba(0,119,255,0.2)", body: "Привет! Мы подготовили для вас персональные рекомендации сообществ и музыки. Заходите в приложение, чтобы посмотреть, что мы нашли для вас. [vk.com/feed](https://vk.com/feed) С любовью, Команда ВКонтакте", isPhishing: false, hints: ["Официальный домен vk.com", "Нет запроса данных или паролей", "Нет угроз или срочности", "Обычное информационное письмо"] },
     { from: "prize@amazon-gift.org", fromName: "Amazon Prize Department", subject: "🎁 ВЫ ВЫИГРАЛИ iPhone 15 Pro!", avatar: "📦", avatarBg: "rgba(255,153,0,0.2)", body: "Поздравляем! Вы стали победителем нашего розыгрыша! Для получения приза оплатите доставку 299₽ и укажите данные карты. [amazon-gift.org/claim-prize](#) Предложение действует 1 час! Amazon Prize Team", isPhishing: true, hints: ["Неофициальный домен: amazon-gift.org", "Просят оплатить доставку и данные карты", "Ограничение по времени (1 час)", "Вы не участвовали в розыгрыше"] },
@@ -495,63 +711,126 @@ function initPhishingGame() {
 }
 
 function renderPhishing() {
-    if (phIdx >= phEm.length) {
-        const p = Math.round((phScore / phEm.length) * 100);
+    if (phIdx >= phishingEmails.length) {
+        const percentage = Math.round((phScore / phishingEmails.length) * 100);
         $('phishingGame').innerHTML = `
-            <div class="result-score">Результат: ${phScore}/${phEm.length} (${p}%)</div>
-            <div class="result-grade">${p >= 70 ? 'Отлично! Ты хорошо распознаёшь фишинг!' : 'Изучи памятку и попробуй снова!'}</div>
+            <div class="result-score">Результат: ${phScore}/${phishingEmails.length} (${percentage}%)</div>
+            <div class="result-grade">${percentage >= 70 ? 'Отлично! Ты хорошо распознаёшь фишинг!' : 'Изучи памятку и попробуй снова!'}</div>
             <button class="btn" onclick="initPhishingGame()">Заново</button>
         `;
-        addHistory('phishing', `Фишинг-симулятор: ${phScore}/${phEm.length} (${p}%)`);
-        checkAchievements(p);
+        addHistory('phishing', `Фишинг-симулятор: ${phScore}/${phishingEmails.length} (${percentage}%)`);
+        checkAchievements(percentage);
         return;
     }
-    const e = phEm[phIdx];
-    $('phishingGame').innerHTML = `
-        <div class="email-header">Письмо ${phIdx + 1} из ${phEm.length}</div>
-        <div class="email-meta">
-            <div class="email-avatar" style="background:${e.avatarBg}">${e.avatar}</div>
-            <div class="email-info">
-                <div class="email-from">${e.fromName}</div>
-                <div class="email-address">${e.from}</div>
-            </div>
-        </div>
-        <div class="email-subject">Тема: ${e.subject}</div>
-        <div class="email-body">${e.body.replace(/\n/g, '<br>')}</div>
-        <div class="email-actions">
-            <button class="btn btn-danger" onclick="phishAnswer(true)">Это фишинг</button>
-            <button class="btn btn-success" onclick="phishAnswer(false)">Это настоящее</button>
-        </div>
-        <div id="phishFeedback" style="display:none"></div>
-    `;
+    const email = phishingEmails[phIdx];
+    // --- Исправление 7: Безопасное создание HTML для фишинг игры ---
+    const gameDiv = $('phishingGame');
+    gameDiv.innerHTML = '';
+
+    const header = document.createElement('div');
+    header.className = 'email-header';
+    header.textContent = `Письмо ${phIdx + 1} из ${phishingEmails.length}`;
+    gameDiv.appendChild(header);
+
+    const metaDiv = document.createElement('div');
+    metaDiv.className = 'email-meta';
+
+    const avatarDiv = document.createElement('div');
+    avatarDiv.className = 'email-avatar';
+    avatarDiv.style.background = email.avatarBg;
+    avatarDiv.textContent = email.avatar;
+
+    const infoDiv = document.createElement('div');
+    infoDiv.className = 'email-info';
+
+    const fromDiv = document.createElement('div');
+    fromDiv.className = 'email-from';
+    fromDiv.textContent = email.fromName;
+
+    const addressDiv = document.createElement('div');
+    addressDiv.className = 'email-address';
+    addressDiv.textContent = email.from;
+
+    infoDiv.appendChild(fromDiv);
+    infoDiv.appendChild(addressDiv);
+    metaDiv.appendChild(avatarDiv);
+    metaDiv.appendChild(infoDiv);
+    gameDiv.appendChild(metaDiv);
+
+    const subjectDiv = document.createElement('div');
+    subjectDiv.className = 'email-subject';
+    subjectDiv.textContent = `Тема: ${email.subject}`;
+    gameDiv.appendChild(subjectDiv);
+
+    const bodyDiv = document.createElement('div');
+    bodyDiv.className = 'email-body';
+    // ВНИМАНИЕ: Используем innerHTML, так как тело письма может содержать гиперссылки.
+    // Это потенциально уязвимо, если данные email.body не надежны. В текущем коде они жёстко закодированы.
+    // При работе с внешними данными нужно использовать библиотеку для санитизации HTML!
+    bodyDiv.innerHTML = email.body.replace(/\n/g, '<br>');
+    gameDiv.appendChild(bodyDiv);
+
+    const actionsDiv = document.createElement('div');
+    actionsDiv.className = 'email-actions';
+
+    const phishingBtn = document.createElement('button');
+    phishingBtn.className = 'btn btn-danger';
+    phishingBtn.textContent = 'Это фишинг';
+    phishingBtn.onclick = () => phishAnswer(true);
+    actionsDiv.appendChild(phishingBtn);
+
+    const realBtn = document.createElement('button');
+    realBtn.className = 'btn btn-success';
+    realBtn.textContent = 'Это настоящее';
+    realBtn.onclick = () => phishAnswer(false);
+    actionsDiv.appendChild(realBtn);
+
+    gameDiv.appendChild(actionsDiv);
+
+    const feedbackDiv = document.createElement('div');
+    feedbackDiv.id = 'phishFeedback';
+    feedbackDiv.style.display = 'none';
+    gameDiv.appendChild(feedbackDiv);
+    // --- Конец исправления 7 ---
 }
 
-function phishAnswer(u) {
-    const e = phEm[phIdx], ok = u === e.isPhishing;
-    if (ok) phScore++;
-    $('phishFeedback').style.display = 'block';
-    $('phishFeedback').innerHTML = `
-        <div class="feedback ${ok ? 'success' : 'error'}">${ok ? '✅ Верно!' : '❌ Ошибка!'}</div>
-        <p>Это ${e.isPhishing ? 'действительно фишинговое письмо' : 'настоящее письмо'}</p>
-        <div class="hints-list"><strong>Признаки:</strong><ul>${e.hints.map(h => `<li>${h}</li>`).join('')}</ul></div>
+function phishAnswer(userChoice) {
+    const email = phishingEmails[phIdx];
+    const isCorrect = userChoice === email.isPhishing;
+    if (isCorrect) phScore++;
+
+    const feedbackDiv = $('phishFeedback');
+    feedbackDiv.style.display = 'block';
+    feedbackDiv.innerHTML = `
+        <div class="feedback ${isCorrect ? 'success' : 'error'}">${isCorrect ? '✅ Верно!' : '❌ Ошибка!'}</div>
+        <p>Это ${email.isPhishing ? 'действительно фишинговое письмо' : 'настоящее письмо'}</p>
+        <div class="hints-list"><strong>Признаки:</strong><ul>${email.hints.map(hint => `<li>${hint}</li>`).join('')}</ul></div>
         <button class="btn" onclick="phIdx++; renderPhishing()">Далее</button>
     `;
+
     document.querySelectorAll('.email-actions').forEach(el => el.style.display = 'none');
 }
 
 function launchConfetti() {
-    const c = $('confettiContainer'), cl = ['#6c5ce7', '#a855f7', '#06b6d4', '#10b981', '#f59e0b', '#ef4444', '#ec4899'];
+    const container = $('confettiContainer');
+    const colors = ['#6c5ce7', '#a855f7', '#06b6d4', '#10b981', '#f59e0b', '#ef4444', '#ec4899'];
+    container.innerHTML = ''; // Очистить предыдущий конфетти
+
     for (let i = 0; i < 50; i++) {
-        const p = document.createElement('div');
-        p.className = 'confetti-piece';
-        p.style.left = Math.random() * 100 + '%';
-        p.style.top = '100%';
-        p.style.background = cl[Math.floor(Math.random() * cl.length)];
-        p.style.animationDelay = Math.random() * 2 + 's';
-        p.style.animationDuration = (1.5 + Math.random()) + 's';
-        p.style.width = (6 + Math.random() * 8) + 'px';
-        p.style.height = (6 + Math.random() * 8) + 'px';
-        c.appendChild(p);
+        const piece = document.createElement('div');
+        piece.className = 'confetti-piece';
+        piece.style.left = Math.random() * 100 + '%';
+        piece.style.top = '100%';
+        piece.style.background = colors[Math.floor(Math.random() * colors.length)];
+        piece.style.animationDelay = Math.random() * 2 + 's';
+        piece.style.animationDuration = (1.5 + Math.random()) + 's';
+        piece.style.width = (6 + Math.random() * 8) + 'px';
+        piece.style.height = (6 + Math.random() * 8) + 'px';
+        container.appendChild(piece);
     }
-    setTimeout(() => c.innerHTML = '', 4000);
+    setTimeout(() => {
+        if (container.parentNode) { // Проверить, что контейнер всё ещё в DOM
+             container.innerHTML = ''; // Очистить конфетти после анимации
+        }
+    }, 4000);
 }
