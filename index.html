@@ -1,113 +1,161 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Cyber Guard</title>
-  <link rel="stylesheet" href="style.css">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;700&family=Space+Grotesk:wght@700&display=swap" rel="stylesheet">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CyberFuture | Платформа цифровой культуры</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@400;600;700&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
 </head>
 <body>
-
-  <nav class="top-nav">
-    <div class="nav-container">
-      <div class="nav-logo" onclick="showPage('home')" style="cursor:pointer;">
-        <i class="fas fa-shield-halved"></i>
-        <span>Cyber Guard</span>
-      </div>
-      <div class="nav-menu">
-        <button class="nav-btn active" onclick="showPage('home')"><i class="fas fa-home"></i> Главная</button>
-        
-        <div class="nav-dropdown">
-          <button class="nav-btn"><i class="fas fa-graduation-cap"></i> Обучение <i class="fas fa-chevron-down" style="font-size:10px;"></i></button>
-          <div class="dropdown-content">
-            <a onclick="showPage('quiz')">Тест</a>
-            <a onclick="showPage('ai-vs-real')">AI vs Real</a>
-            <a onclick="showPage('phishing')">Симулятор фишинга</a>
-          </div>
+    <header>
+        <div class="logo">CYBER<span class="highlight">FUTURE</span></div>
+        <div class="controls">
+            <button id="theme-toggle" class="btn-icon" title="Сменить тему">🌓</button>
+            <button id="fullscreen-toggle" class="btn-icon" title="Полный экран">⛶</button>
         </div>
+    </header>
 
-        <div class="nav-dropdown">
-          <button class="nav-btn"><i class="fas fa-tools"></i> Инструменты <i class="fas fa-chevron-down" style="font-size:10px;"></i></button>
-          <div class="dropdown-content">
-            <a onclick="showPage('password')">Пароль</a>
-            <a onclick="showPage('links')">Ссылки</a>
-            <a onclick="showPage('scanner')">Сканер</a>
-          </div>
+    <main id="app">
+        <!-- Главное меню (Панель навигации) -->
+        <section id="menu" class="screen active">
+            <div class="hero-text">
+                <h1>Развивай цифровую культуру</h1>
+                <p>Безопасность в сети начинается с знаний. Выбери направление:</p>
+            </div>
+            <div class="nav-panel">
+                <button class="nav-btn color-1" onclick="navigateTo('quiz')">🎨 Учение с увлечением</button>
+                <button class="nav-btn color-2" onclick="navigateTo('memo')">🛡️ Предупрежден – значит вооружен</button>
+                <button class="nav-btn color-3" onclick="navigateTo('scammer')">🕵️ Если написал мошенник</button>
+                <button class="nav-btn color-4" onclick="navigateTo('profile')">👤 Профиль и достижения</button>
+            </div>
+        </section>
+
+        <!-- Раздел 1: Викторина -->
+        <section id="quiz" class="screen">
+            <div class="section-header">
+                <button class="home-btn" onclick="navigateTo('menu')">🏠 На панель</button>
+                <h2>🎨 Учение с увлечением</h2>
+            </div>
+            <div id="quiz-container">
+                <div class="image-wrapper">
+                    <img id="quiz-img" src="" alt="Изображение для анализа">
+                    <span id="img-loader">⏳ Загрузка...</span>
+                </div>
+                <div id="quiz-controls">
+                    <p class="quiz-prompt">Реальное фото или генерация ИИ?</p>
+                    <div class="answer-buttons">
+                        <button class="ans-btn real" onclick="checkAnswer('real')">✅ Реальное</button>
+                        <button class="ans-btn fake" onclick="checkAnswer('fake')">🤖 ИИ / Фейк</button>
+                    </div>
+                </div>
+                <div id="quiz-feedback" class="hidden">
+                    <p id="feedback-text"></p>
+                    <button class="action-btn" onclick="nextQuestion()">Далее →</button>
+                </div>
+                <div id="quiz-results" class="hidden">
+                    <h3>📊 Тренировка завершена!</h3>
+                    <p id="final-score"></p>
+                    <div id="results-list"></div>
+                    <button class="action-btn" onclick="resetQuiz()">Пройти снова</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Раздел 2: Памятка -->
+        <section id="memo" class="screen">
+            <div class="section-header">
+                <button class="home-btn" onclick="navigateTo('menu')">🏠 На панель</button>
+                <h2>🛡️ Предупрежден – значит вооружен</h2>
+            </div>
+            <div class="info-grid">
+                <div class="info-card">
+                    <h3>🔗 Ссылки и загрузки</h3>
+                    <p>Не переходи по подозрительным ссылкам из SMS, email или соцсетей. Не скачивай `.exe`, `.bat`, `.scr` файлы от незнакомцев.</p>
+                </div>
+                <div class="info-card">
+                    <h3>🔑 Личные данные</h3>
+                    <p>Никогда не сообщай пароли, коды из SMS, данные карт. Банки и госуслуги <b>никогда</b> не запрашивают их в личных сообщениях.</p>
+                </div>
+                <div class="info-card">
+                    <h3>📱 Цифровая гигиена</h3>
+                    <p>Включай двухфакторную аутентификацию (2FA). Используй разные пароли. Регулярно обновляй приложения и ОС.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Раздел 3: Мошенники -->
+        <section id="scammer" class="screen">
+            <div class="section-header">
+                <button class="home-btn" onclick="navigateTo('menu')">🏠 На панель</button>
+                <h2>🕵️ Как распознать и что делать?</h2>
+            </div>
+            <div class="scammer-grid">
+                <div class="scammer-card type-1">
+                    <h3>👤 Обычные воришки</h3>
+                    <p><b>Признаки:</b> "Легкий заработок", предоплата, искусственная срочность.</p>
+                    <p><b>Действия:</b> Блокировать, не переводить деньги, жаловаться в поддержку.</p>
+                </div>
+                <div class="scammer-card type-2">
+                    <h3>💳 Дропперы</h3>
+                    <p><b>Признаки:</b> Просят открыть карту "для перевода комиссии", предлагают % за реквизиты.</p>
+                    <p><b>Действия:</b> Отказаться. Участие в дроппинге – уголовная статья.</p>
+                </div>
+                <div class="scammer-card type-3">
+                    <h3>🌐 Организаторы / Террористы в сети</h3>
+                    <p><b>Признаки:</b> Агрессивная пропаганда, призывы к незаконным действиям, давление.</p>
+                    <p><b>Действия:</b> Сохранить скриншоты, не вступать в диалог, сообщить в полицию (102) или Роскомнадзор.</p>
+                </div>
+                <div class="emergency-box">
+                    <h3>🚨 Экстренный алгоритм при обмане</h3>
+                    <ol>
+                        <li>Прекрати общение и заблокируй контакт.</li>
+                        <li>Сделай скриншоты переписки и транзакций.</li>
+                        <li>Позвони в банк (если передал данные карт) для блокировки.</li>
+                        <li>Подай заявление в полицию через сайт МВД или лично.</li>
+                        <li>Смени пароли на взломанных аккаунтах.</li>
+                    </ol>
+                </div>
+            </div>
+        </section>
+
+        <!-- Раздел 4: Профиль -->
+        <section id="profile" class="screen">
+            <div class="section-header">
+                <button class="home-btn" onclick="navigateTo('menu')">🏠 На панель</button>
+                <h2>👤 Профиль пользователя</h2>
+            </div>
+            <div class="profile-content">
+                <div class="profile-header">
+                    <div class="avatar">🧑‍💻</div>
+                    <div>
+                        <h3 id="user-name">Гость</h3>
+                        <input type="text" id="name-input" placeholder="Введите имя и фамилию" maxlength="25">
+                    </div>
+                </div>
+                
+                <div class="stats-box">
+                    <h3>🏆 Достижения</h3>
+                    <div id="achievements-grid" class="achievements-grid"></div>
+                </div>
+
+                <div class="history-box">
+                    <h3>📜 История действий</h3>
+                    <ul id="history-list"></ul>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Всплывающее окно достижения -->
+    <div id="achievement-popup" class="achievement-popup hidden">
+        <div class="popup-content">
+            <span class="popup-icon">🎉</span>
+            <h3 id="popup-title">Новое достижение!</h3>
+            <p id="popup-desc"></p>
         </div>
-
-        <div class="nav-dropdown">
-          <button class="nav-btn"><i class="fas fa-info-circle"></i> Информация <i class="fas fa-chevron-down" style="font-size:10px;"></i></button>
-          <div class="dropdown-content">
-            <a onclick="showPage('memo')">Памятка</a>
-            <a onclick="showPage('scammers')">Мошенники</a>
-            <a onclick="showPage('cabinet')">Кабинет</a>
-          </div>
-        </div>
-      </div>
-    </div>
-  </nav>
-
-  <main class="main-content">
-    <!-- Главная -->
-    <div id="page-home" class="page active">
-      <h1>Добро пожаловать в Cyber Guard</h1>
-      <p>Научись безопасно вести себя в интернете, распознавать мошенников и защищать свои данные. Выбирай раздел и начинай обучение!</p>
-      <div class="home-buttons">
-        <button class="btn btn-primary" onclick="showPage('quiz')">Начать тест</button>
-        <button class="btn btn-secondary" onclick="showPage('memo')">Памятка</button>
-      </div>
-      <h2>Разделы</h2>
-      <div class="grid">
-        <div class="card" onclick="showPage('quiz')"><h3>📝 Тест</h3><p>Проверь свои знания по кибербезопасности и получи сертификат</p></div>
-        <div class="card" onclick="showPage('ai-vs-real')"><h3>🤖 AI vs Real</h3><p>Научись отличать реальные изображения от сгенерированных нейросетями</p></div>
-        <div class="card" onclick="showPage('password')"><h3>🔐 Пароль</h3><p>Сгенерируй надёжный пароль с нужными параметрами</p></div>
-        <div class="card" onclick="showPage('links')"><h3>🔗 Ссылки</h3><p>Проверь ссылку на безопасность перед переходом</p></div>
-        <div class="card" onclick="showPage('memo')"><h3>📖 Памятка</h3><p>Полезные советы по безопасности в интернете</p></div>
-        <div class="card" onclick="showPage('scammers')"><h3>🕵️ Мошенники</h3><p>Узнай виды мошенников и как им противостоять</p></div>
-        <div class="card" onclick="showPage('scanner')"><h3>🛡️ Сканер</h3><p>Проверь файл на вирусы и вредоносное ПО</p></div>
-        <div class="card" onclick="showPage('phishing')"><h3>🎣 Фишинг</h3><p>Научись распознавать фишинговые письма</p></div>
-      </div>
     </div>
 
-    <!-- AI vs Real -->
-    <div id="page-ai-vs-real" class="page">
-      <h2>🎬 AI vs Real</h2>
-      <p>Посмотри на изображение и попробуй определить: это реальное фото или сгенерировано нейросетью?</p>
-      <div class="tips">
-        <h3>Как отличить фейк?</h3>
-        <ul>
-          <li>👁️ <strong>Обрати внимание на глаза</strong> — неестественные зрачки, разный размер глаз или странное отражение</li>
-          <li>🖐️ <strong>Посмотри на руки и пальцы</strong> — лишние или недостающие пальцы, неестественные суставы</li>
-          <li>📝 <strong>Проверь текст на изображении</strong> — бессмысленные символы или искажённые буквы</li>
-          <li>🌊 <strong>Фон и детали</strong> — размытый или нелогичный фон, странные тени и отражения</li>
-          <li>👂 <strong>Уши и аксессуары</strong> — асимметричные уши, странные серьги или неправильно надетые очки</li>
-          <li>🔍 <strong>Общая реалистичность</strong> — слишком идеальная кожа, неестественные пропорции тела</li>
-        </ul>
-      </div>
-      <div id="aiGameArea"></div>
-    </div>
-
-    <!-- Заглушки для остальных страниц -->
-    <div id="page-quiz" class="page"><h2>📝 Тест</h2><p>Раздел в разработке...</p></div>
-    <div id="page-phishing" class="page"><h2>🎣 Симулятор фишинга</h2><p>Раздел в разработке...</p></div>
-    <div id="page-password" class="page"><h2>🔐 Генератор паролей</h2><p>Раздел в разработке...</p></div>
-    <div id="page-links" class="page"><h2>🔗 Проверка ссылок</h2><p>Раздел в разработке...</p></div>
-    <div id="page-scanner" class="page"><h2>🛡️ Сканер файлов</h2><p>Раздел в разработке...</p></div>
-    <div id="page-memo" class="page"><h2>📖 Памятка</h2><p>Раздел в разработке...</p></div>
-    <div id="page-scammers" class="page"><h2>🕵️ Мошенники</h2><p>Раздел в разработке...</p></div>
-    <div id="page-cabinet" class="page"><h2>👤 Личный кабинет</h2><p>Раздел в разработке...</p></div>
-  </main>
-
-  <div class="cookie-banner" id="cookieBanner">
-    <p>🍪 Этот сайт использует cookie-файлы и localStorage для сохранения вашего прогресса, достижений и настроек. Продолжая использовать сайт, вы соглашаетесь с этим.</p>
-    <div style="display:flex; gap:10px;">
-      <button class="btn btn-success" onclick="document.getElementById('cookieBanner').style.display='none'">Принять</button>
-      <button class="btn btn-danger" onclick="document.getElementById('cookieBanner').style.display='none'">Отклонить</button>
-    </div>
-  </div>
-
-  <script src="func.js"></script>
+    <script src="script.js"></script>
 </body>
 </html>
