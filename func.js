@@ -14,7 +14,7 @@ const state = {
     actionLog: []
 };
 
-// База вопросов (замените ссылки на свои изображения при необходимости)
+// База вопросов
 const questions = [
     { img: 'https://picsum.photos/seed/real1/600/400', type: 'real', explanation: 'Это реальное фото. Естественные тени, корректная геометрия и логичные детали фона.' },
     { img: 'https://picsum.photos/seed/ai1/600/400', type: 'fake', explanation: 'Сгенерировано ИИ. Обратите внимание на неестественную текстуру и размытые элементы на заднем плане.' },
@@ -45,8 +45,11 @@ document.addEventListener('DOMContentLoaded', () => {
 // Навигация
 function navigateTo(screenId) {
     document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-    document.getElementById(screenId).classList.add('active');
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    const target = document.getElementById(screenId);
+    if (target) {
+        target.classList.add('active');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
 }
 
 // Тема
@@ -83,7 +86,7 @@ function setupProfile() {
     if (nameInput) {
         nameInput.value = state.profileName !== 'Гость' ? state.profileName : '';
         document.getElementById('user-name').textContent = state.profileName;
-
+        
         nameInput.addEventListener('input', (e) => {
             const val = e.target.value.trim();
             state.profileName = val || 'Гость';
@@ -98,9 +101,7 @@ function setupProfile() {
 function setupQuizLoader() {
     const img = document.getElementById('quiz-img');
     const loader = document.getElementById('img-loader');
-    
     if (img && loader) {
-        // Убираем обработчик loading - это не стандартное событие
         img.addEventListener('load', () => loader.style.display = 'none');
         img.addEventListener('error', () => {
             loader.textContent = '⚠️ Ошибка загрузки';
@@ -130,8 +131,12 @@ function renderQuiz() {
     const quizImg = document.getElementById('quiz-img');
     const prompt = document.querySelector('.quiz-prompt');
     const buttons = document.querySelectorAll('.ans-btn');
+
+    if (quizImg) {
+        quizImg.src = q.img;
+        document.getElementById('img-loader').style.display = 'block'; // Показать лоадер пока грузится
+    }
     
-    if (quizImg) quizImg.src = q.img;
     if (prompt) prompt.textContent = `Вопрос ${state.quizIndex + 1}: Это фото или ИИ?`;
     if (buttons) buttons.forEach(btn => btn.disabled = false);
 }
@@ -143,17 +148,17 @@ function checkAnswer(choice) {
     
     const buttons = document.querySelectorAll('.ans-btn');
     if (buttons) buttons.forEach(btn => btn.disabled = true);
-    
+
     const feedback = document.getElementById('quiz-feedback');
     const feedbackText = document.getElementById('feedback-text');
-    
+
     if (feedback) feedback.classList.remove('hidden');
     if (feedbackText) {
         feedbackText.innerHTML = `
             <b>${isCorrect ? '✅ Верно!' : '❌ Неверно.'}</b><br>${q.explanation}
         `;
     }
-    
+
     state.quizHistory.push({ q: `Вопрос ${state.quizIndex + 1}`, correct: isCorrect });
     logAction(`Викторина: ${isCorrect ? 'верный ответ' : 'ошибка'}`);
     saveState();
@@ -169,10 +174,9 @@ function nextQuestion() {
 function showQuizResults() {
     const results = document.getElementById('quiz-results');
     const finalScore = document.getElementById('final-score');
-    
     if (results) results.classList.remove('hidden');
     if (finalScore) finalScore.textContent = `Правильных ответов: ${state.quizScore} из ${questions.length}`;
-    
+
     const list = document.getElementById('results-list');
     if (list) {
         list.innerHTML = state.quizHistory.map(h => `
@@ -181,7 +185,7 @@ function showQuizResults() {
             </div>
         `).join('');
     }
-    
+
     if (state.quizIndex === questions.length) unlockAchievement('full_quiz');
 }
 
@@ -196,12 +200,12 @@ function resetQuiz() {
 function renderAchievements() {
     const grid = document.getElementById('achievements-grid');
     if (!grid) return;
-    
+    // ИСПРАВЛЕНО: def = > заменено на def =>
     grid.innerHTML = achievementDefs.map(def => `
-        <div class="achievement ${state.achievements[def.id] ? 'unlocked' : ''}">
-            <span>${def.icon}</span>
-            <b>${def.title}</b>
-        </div>
+         <div class="achievement ${state.achievements[def.id] ? 'unlocked' : ''}">
+             <span>${def.icon}</span>
+             <b>${def.title}</b>
+         </div>
     `).join('');
 }
 
@@ -210,7 +214,6 @@ function unlockAchievement(id) {
     state.achievements[id] = true;
     renderAchievements();
     saveState();
-    
     const def = achievementDefs.find(a => a.id === id);
     if (def) showPopup(def);
 }
@@ -219,11 +222,13 @@ function showPopup(def) {
     const popup = document.getElementById('achievement-popup');
     const title = document.getElementById('popup-title');
     const desc = document.getElementById('popup-desc');
+    const icon = document.getElementById('popup-icon');
     
     if (popup) popup.classList.remove('hidden');
     if (title) title.textContent = `🎉 ${def.title}`;
     if (desc) desc.textContent = def.desc;
-    
+    if (icon) icon.textContent = def.icon;
+
     setTimeout(() => {
         if (popup) popup.classList.add('hidden');
     }, 3500);
