@@ -1,248 +1,112 @@
-<!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Cyber Guard - обучение кибербезопасности">
-    <title>Cyber Guard</title>
-    
-    <!-- Шрифты и иконки -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;700&family=Space+Grotesk:wght@400;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
-    <!-- Ваш CSS -->
-    <link rel="stylesheet" href="style.css">
-    
-    <style>
-        /* Базовые стили для работы SPA (переключение страниц) */
-        .page { display: none; }
-        .page.active { display: block; animation: fadeIn 0.3s ease; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-
-        /* Сетка разделов на главной */
-        .sections-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 20px;
-            margin-top: 40px;
-        }
-        .section-card {
-            background: var(--bg-card);
-            border: 1px solid var(--border);
-            border-radius: 16px;
-            padding: 24px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-        .section-card:hover {
-            transform: translateY(-5px);
-            background: var(--bg-card-hover);
-            box-shadow: var(--shadow);
-        }
-        .section-card h3 { margin: 0 0 10px; color: var(--text-primary); }
-        .section-card p { margin: 0; color: var(--text-secondary); font-size: 14px; }
-
-        /* Советы AI vs Real */
-        .tips-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 16px;
-            margin-top: 30px;
-        }
-        .tip-item {
-            background: var(--bg-card);
-            padding: 16px;
-            border-radius: 12px;
-            border: 1px solid var(--border);
-        }
-        .tip-item strong { display: block; margin-bottom: 6px; color: var(--text-primary); }
-        .tip-item p { margin: 0; color: var(--text-secondary); font-size: 14px; }
-
-        /* Cookie баннер */
-        .cookie-banner {
-            position: fixed;
-            bottom: 0; left: 0; right: 0;
-            background: var(--bg-card);
-            border-top: 1px solid var(--border);
-            padding: 20px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 20px;
-            flex-wrap: wrap;
-            z-index: 9999;
-            box-shadow: 0 -4px 20px rgba(0,0,0,0.4);
-        }
-        .cookie-banner p { margin: 0; flex: 1; min-width: 300px; color: var(--text-secondary); }
-        .cookie-banner.hidden { display: none; }
-        
-        /* Базовые кнопки */
-        .btn {
-            padding: 10px 20px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: 600;
-            transition: all 0.2s;
-        }
-        .btn-primary { background: var(--gradient); color: #fff; }
-        .btn-secondary { background: var(--bg-card-hover); color: var(--text-primary); }
-        .btn:hover { transform: translateY(-2px); }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cyber Guard</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;700&family=Space+Grotesk:wght@700&display=swap" rel="stylesheet">
 </head>
 <body>
 
-    <!-- Верхняя навигация -->
-    <nav class="top-nav">
-        <div class="nav-container">
-            <div class="nav-logo">
-                <i class="fas fa-shield-alt"></i>
-                <span>Cyber Guard</span>
-            </div>
-            <div class="nav-menu">
-                <button class="nav-btn active" onclick="showPage('home')">Главная</button>
-                
-                <div class="nav-dropdown">
-                    <button class="nav-btn">Обучение <i class="fas fa-chevron-down"></i></button>
-                    <div class="dropdown-content">
-                        <a onclick="showPage('quiz')">Тест</a>
-                        <a onclick="showPage('ai-vs-real')">AI vs Real</a>
-                        <a onclick="showPage('phishing')">Симулятор фишинга</a>
-                    </div>
-                </div>
-                
-                <div class="nav-dropdown">
-                    <button class="nav-btn">Инструменты <i class="fas fa-chevron-down"></i></button>
-                    <div class="dropdown-content">
-                        <a onclick="showPage('password')">Пароль</a>
-                        <a onclick="showPage('links')">Ссылки</a>
-                        <a onclick="showPage('scanner')">Сканер</a>
-                    </div>
-                </div>
-                
-                <div class="nav-dropdown">
-                    <button class="nav-btn">Информация <i class="fas fa-chevron-down"></i></button>
-                    <div class="dropdown-content">
-                        <a onclick="showPage('memo')">Памятка</a>
-                        <a onclick="showPage('scammers')">Мошенники</a>
-                    </div>
-                </div>
-                
-                <button class="nav-btn" onclick="showPage('cabinet')">Кабинет</button>
-            </div>
-        </div>
-    </nav>
-
-    <main class="main-content">
-        <!-- Главная страница -->
-        <div id="page-home" class="page active">
-            <h1 style="text-align:center; margin-bottom:16px;">Добро пожаловать в Cyber Guard</h1>
-            <p style="text-align:center; color:var(--text-secondary); max-width:700px; margin:0 auto 30px;">
-                Научись безопасно вести себя в интернете, распознавать мошенников и защищать свои данные. Выбирай раздел и начинай обучение!
-            </p>
-            <div style="text-align:center; display:flex; gap:16px; justify-content:center; flex-wrap:wrap;">
-                <button class="btn btn-primary" onclick="showPage('quiz')">Начать тест</button>
-                <button class="btn btn-secondary" onclick="showPage('memo')">Памятка</button>
-            </div>
-
-            <h2 style="margin-top:50px; text-align:center;">Разделы</h2>
-            <div class="sections-grid">
-                <div class="section-card" onclick="showPage('quiz')">
-                    <h3>Тест</h3>
-                    <p>Проверь свои знания по кибербезопасности и получи сертификат</p>
-                </div>
-                <div class="section-card" onclick="showPage('ai-vs-real')">
-                    <h3>AI vs Real</h3>
-                    <p>Научись отличать реальные изображения от сгенерированных нейросетями</p>
-                </div>
-                <div class="section-card" onclick="showPage('password')">
-                    <h3>Пароль</h3>
-                    <p>Сгенерируй надёжный пароль с нужными параметрами</p>
-                </div>
-                <div class="section-card" onclick="showPage('links')">
-                    <h3>Ссылки</h3>
-                    <p>Проверь ссылку на безопасность перед переходом</p>
-                </div>
-                <div class="section-card" onclick="showPage('memo')">
-                    <h3>Памятка</h3>
-                    <p>Полезные советы по безопасности в интернете</p>
-                </div>
-                <div class="section-card" onclick="showPage('scammers')">
-                    <h3>Мошенники</h3>
-                    <p>Узнай виды мошенников и как им противостоять</p>
-                </div>
-                <div class="section-card" onclick="showPage('scanner')">
-                    <h3>Сканер</h3>
-                    <p>Проверь файл на вирусы и вредоносное ПО</p>
-                </div>
-                <div class="section-card" onclick="showPage('phishing')">
-                    <h3>Фишинг</h3>
-                    <p>Научись распознавать фишинговые письма</p>
-                </div>
-            </div>
+  <nav class="top-nav">
+    <div class="nav-container">
+      <div class="nav-logo" onclick="showPage('home')" style="cursor:pointer;">
+        <i class="fas fa-shield-halved"></i>
+        <span>Cyber Guard</span>
+      </div>
+      <div class="nav-menu">
+        <button class="nav-btn active" onclick="showPage('home')"><i class="fas fa-home"></i> Главная</button>
+        
+        <div class="nav-dropdown">
+          <button class="nav-btn"><i class="fas fa-graduation-cap"></i> Обучение <i class="fas fa-chevron-down" style="font-size:10px;"></i></button>
+          <div class="dropdown-content">
+            <a onclick="showPage('quiz')">Тест</a>
+            <a onclick="showPage('ai-vs-real')">AI vs Real</a>
+            <a onclick="showPage('phishing')">Симулятор фишинга</a>
+          </div>
         </div>
 
-        <!-- Страница AI vs Real -->
-        <div id="page-ai-vs-real" class="page">
-            <div class="ai-game-container">
-                <h2 style="text-align:center;">🎬 AI vs Real</h2>
-                <p style="text-align:center; color:var(--text-secondary);">Посмотри на изображение и попробуй определить: это реальное фото или сгенерировано нейросетью?</p>
-                
-                <!-- Контейнер для рендера игры из JS -->
-                <div id="aiGameArea"></div>
-
-                <h3 style="margin-top:40px; text-align:center;">Как отличить фейк?</h3>
-                <div class="tips-grid">
-                    <div class="tip-item"><i>👁️</i><strong>Обрати внимание на глаза</strong><p>У нейросетей часто получаются неестественные зрачки, разный размер глаз или странное отражение</p></div>
-                    <div class="tip-item"><i>🖐️</i><strong>Посмотри на руки и пальцы</strong><p>Нейросети часто рисуют лишние или недостающие пальцы, неестественные суставы</p></div>
-                    <div class="tip-item"><i>📝</i><strong>Проверь текст на изображении</strong><p>Надписи на AI-картинках часто содержат бессмысленные символы или искажённые буквы</p></div>
-                    <div class="tip-item"><i>🌊</i><strong>Фон и детали</strong><p>Размытый или нелогичный фон, странные тени и отражения — признаки генерации</p></div>
-                    <div class="tip-item"><i>👂</i><strong>Уши и аксессуары</strong><p>Асимметричные уши, странные серьги или неправильно надетые очки</p></div>
-                    <div class="tip-item"><i>🔍</i><strong>Общая реалистичность</strong><p>Слишком идеальная кожа, неестественные пропорции тела или странные текстуры</p></div>
-                </div>
-            </div>
+        <div class="nav-dropdown">
+          <button class="nav-btn"><i class="fas fa-tools"></i> Инструменты <i class="fas fa-chevron-down" style="font-size:10px;"></i></button>
+          <div class="dropdown-content">
+            <a onclick="showPage('password')">Пароль</a>
+            <a onclick="showPage('links')">Ссылки</a>
+            <a onclick="showPage('scanner')">Сканер</a>
+          </div>
         </div>
 
-        <!-- Заглушки для остальных страниц -->
-        <div id="page-quiz" class="page"><h2>📝 Тест</h2><p>Раздел в разработке...</p></div>
-        <div id="page-phishing" class="page"><h2>🎣 Симулятор фишинга</h2><p>Раздел в разработке...</p></div>
-        <div id="page-password" class="page"><h2>🔐 Генератор паролей</h2><p>Раздел в разработке...</p></div>
-        <div id="page-links" class="page"><h2>🔗 Проверка ссылок</h2><p>Раздел в разработке...</p></div>
-        <div id="page-scanner" class="page"><h2>🛡️ Сканер файлов</h2><p>Раздел в разработке...</p></div>
-        <div id="page-memo" class="page"><h2>📖 Памятка</h2><p>Раздел в разработке...</p></div>
-        <div id="page-scammers" class="page"><h2>🕵️ Мошенники</h2><p>Раздел в разработке...</p></div>
-        <div id="page-cabinet" class="page"><h2>👤 Личный кабинет</h2><p>Раздел в разработке...</p></div>
-    </main>
+        <div class="nav-dropdown">
+          <button class="nav-btn"><i class="fas fa-info-circle"></i> Информация <i class="fas fa-chevron-down" style="font-size:10px;"></i></button>
+          <div class="dropdown-content">
+            <a onclick="showPage('memo')">Памятка</a>
+            <a onclick="showPage('scammers')">Мошенники</a>
+            <a onclick="showPage('cabinet')">Кабинет</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </nav>
 
-    <!-- Cookie баннер -->
-    <div class="cookie-banner" id="cookieBanner">
-        <p>🍪 Этот сайт использует cookie-файлы и localStorage для сохранения вашего прогресса, достижений и настроек. Продолжая использовать сайт, вы соглашаетесь с этим.</p>
-        <button class="btn btn-primary" id="acceptCookies">Принять</button>
-        <button class="btn btn-secondary" id="declineCookies">Отклонить</button>
+  <main class="main-content">
+    <!-- Главная -->
+    <div id="page-home" class="page active">
+      <h1>Добро пожаловать в Cyber Guard</h1>
+      <p>Научись безопасно вести себя в интернете, распознавать мошенников и защищать свои данные. Выбирай раздел и начинай обучение!</p>
+      <div class="home-buttons">
+        <button class="btn btn-primary" onclick="showPage('quiz')">Начать тест</button>
+        <button class="btn btn-secondary" onclick="showPage('memo')">Памятка</button>
+      </div>
+      <h2>Разделы</h2>
+      <div class="grid">
+        <div class="card" onclick="showPage('quiz')"><h3>📝 Тест</h3><p>Проверь свои знания по кибербезопасности</p></div>
+        <div class="card" onclick="showPage('ai-vs-real')"><h3>🤖 AI vs Real</h3><p>Отличай реальные фото от генераций</p></div>
+        <div class="card" onclick="showPage('password')"><h3>🔐 Пароль</h3><p>Генератор надёжных паролей</p></div>
+        <div class="card" onclick="showPage('links')"><h3>🔗 Ссылки</h3><p>Проверка безопасности URL</p></div>
+        <div class="card" onclick="showPage('memo')"><h3>📖 Памятка</h3><p>Полезные советы по безопасности</p></div>
+        <div class="card" onclick="showPage('scammers')"><h3>🕵️ Мошенники</h3><p>Виды мошенников и защита</p></div>
+        <div class="card" onclick="showPage('scanner')"><h3>🛡️ Сканер</h3><p>Проверка файлов на вирусы</p></div>
+        <div class="card" onclick="showPage('phishing')"><h3>🎣 Фишинг</h3><p>Распознавание фишинговых писем</p></div>
+      </div>
     </div>
 
-    <!-- Хелпер для быстрого доступа к элементам -->
-    <script>
-        window.$ = (id) => document.getElementById(id);
-    </script>
-    <script src="js.js"></script>
-    
-    <script>
-        // Логика cookie баннера
-        const cookieBanner = $('cookieBanner');
-        if (localStorage.getItem('cookiesAccepted') === 'true') {
-            cookieBanner.classList.add('hidden');
-        }
+    <!-- AI vs Real -->
+    <div id="page-ai-vs-real" class="page">
+      <h2>🎬 AI vs Real</h2>
+      <p>Посмотри на изображение и попробуй определить: это реальное фото или сгенерировано нейросетью?</p>
+      <div class="tips">
+        <h3>Как отличить фейк?</h3>
+        <ul>
+          <li>👁️ <strong>Обрати внимание на глаза</strong> — неестественные зрачки, разный размер глаз или странное отражение</li>
+          <li>🖐️ <strong>Посмотри на руки и пальцы</strong> — лишние/недостающие пальцы, неестественные суставы</li>
+          <li>📝 <strong>Проверь текст на изображении</strong> — бессмысленные символы или искажённые буквы</li>
+          <li>🌊 <strong>Фон и детали</strong> — размытый или нелогичный фон, странные тени и отражения</li>
+          <li>👂 <strong>Уши и аксессуары</strong> — асимметричные уши, странные серьги или неправильно надетые очки</li>
+          <li>🔍 <strong>Общая реалистичность</strong> — слишком идеальная кожа, неестественные пропорции</li>
+        </ul>
+      </div>
+      <div id="aiGameArea"></div>
+    </div>
 
-        $('acceptCookies')?.addEventListener('click', () => {
-            localStorage.setItem('cookiesAccepted', 'true');
-            cookieBanner.classList.add('hidden');
-        });
-        $('declineCookies')?.addEventListener('click', () => {
-            localStorage.removeItem('cookiesAccepted');
-            cookieBanner.classList.add('hidden');
-        });
-    </script>
+    <!-- Остальные страницы-заглушки -->
+    <div id="page-quiz" class="page"><h2>📝 Тест</h2><p>Раздел в разработке...</p></div>
+    <div id="page-phishing" class="page"><h2>🎣 Симулятор фишинга</h2><p>Раздел в разработке...</p></div>
+    <div id="page-password" class="page"><h2>🔐 Генератор паролей</h2><p>Раздел в разработке...</p></div>
+    <div id="page-links" class="page"><h2>🔗 Проверка ссылок</h2><p>Раздел в разработке...</p></div>
+    <div id="page-scanner" class="page"><h2>🛡️ Сканер файлов</h2><p>Раздел в разработке...</p></div>
+    <div id="page-memo" class="page"><h2>📖 Памятка</h2><p>Раздел в разработке...</p></div>
+    <div id="page-scammers" class="page"><h2>🕵️ Мошенники</h2><p>Раздел в разработке...</p></div>
+    <div id="page-cabinet" class="page"><h2>👤 Личный кабинет</h2><p>Раздел в разработке...</p></div>
+  </main>
+
+  <div class="cookie-banner" id="cookieBanner">
+    <p>🍪 Этот сайт использует cookie-файлы и localStorage для сохранения вашего прогресса. Продолжая использовать сайт, вы соглашаетесь с этим.</p>
+    <div style="display:flex; gap:10px;">
+      <button class="btn btn-success" onclick="document.getElementById('cookieBanner').style.display='none'">Принять</button>
+      <button class="btn btn-danger" onclick="document.getElementById('cookieBanner').style.display='none'">Отклонить</button>
+    </div>
+  </div>
+
+  <script src="func.js"></script>
 </body>
 </html>
