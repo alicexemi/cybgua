@@ -1,4 +1,4 @@
-// Вспомогательная функция для быстрого получения элементов (если её нет в основном коде)
+// Вспомогательная функция для быстрого получения элементов
 const $ = (id) => document.getElementById(id);
 
 const aiGames = [
@@ -34,7 +34,7 @@ const aiGames = [
     title: "Природный снимок",
     desc: "NASA или нейросеть?",
     isAI: false,
-    img: "https://avatars.mds.yandex.net/i?id=f2c07b0e6d69104ce4c0b0fc27e8cb76f4bc7838-5205187-images-thumbs&n=13",
+    img: "https://avatars.mds.yandex.net/i?id=f2c07b0e6d69104ce4c0b0fc27e8cb76f4bc7838-5205177-images-thumbs&n=13",
     clue: "Проверь детализацию и естественность освещения"
   },
   {
@@ -49,7 +49,6 @@ const aiGames = [
 let aiIdx = 0, aiScore = 0, aiGameStarted = false;
 
 function initAiGame() {
-  // Сброс состояния перед началом или перезапуском
   aiIdx = 0;
   aiScore = 0;
   aiGameStarted = true;
@@ -60,11 +59,9 @@ function renderAiGame() {
   const container = $('aiGameArea');
   if (!container) return;
 
-  // Если игра завершена
   if (aiIdx >= aiGames.length) {
     const p = Math.round((aiScore / aiGames.length) * 100);
     const gradeText = p >= 70 ? 'Отличный глаз! Ты хорошо различаешь фейки!' : 'Практикуйся, чтобы стать лучше!';
-
     container.innerHTML = `
       <div class="result-score">Результат: ${aiScore}/${aiGames.length} (${p}%)</div>
       <div class="result-grade">${gradeText}</div>
@@ -72,14 +69,11 @@ function renderAiGame() {
         <i class="fas fa-redo"></i> Начать заново
       </button>
     `;
-
-    // Безопасный вызов внешних функций
     if (typeof addHistory === 'function') addHistory('ai-vs-real', `AI vs Real: ${aiScore}/${aiGames.length} (${p}%)`);
     if (typeof checkAchievements === 'function') checkAchievements(p);
     return;
   }
 
-  // Отрисовка текущего раунда
   const g = aiGames[aiIdx];
   container.innerHTML = `
     <div class="game-header">Раунд ${aiIdx + 1} из ${aiGames.length}</div>
@@ -88,12 +82,8 @@ function renderAiGame() {
     <p style="text-align:center; color:var(--text-secondary); margin-bottom:16px;">${g.desc}</p>
     <div class="clue">💡 ${g.clue}</div>
     <div class="game-actions">
-      <button class="btn btn-danger" onclick="aiAnswer(true)">
-        <i class="fas fa-robot"></i> Это ИИ
-      </button>
-      <button class="btn btn-success" onclick="aiAnswer(false)">
-        <i class="fas fa-camera"></i> Это реальное
-      </button>
+      <button class="btn btn-danger" onclick="aiAnswer(true)"><i class="fas fa-robot"></i> Это ИИ</button>
+      <button class="btn btn-success" onclick="aiAnswer(false)"><i class="fas fa-camera"></i> Это реальное</button>
     </div>
   `;
 }
@@ -102,44 +92,35 @@ function aiAnswer(u) {
   const g = aiGames[aiIdx];
   const ok = u === g.isAI;
   if (ok) aiScore++;
-
   const container = $('aiGameArea');
   container.innerHTML = `
-    <div class="feedback ${ok ? 'success' : 'error'}">
-      ${ok ? '✅ Правильно!' : '❌ Неверно!'}
-    </div>
-    <p style="text-align:center; margin:16px 0;">
-      Правильный ответ: ${g.isAI ? 'Это было сгенерировано ИИ' : 'Это было реальное изображение'}
-    </p>
-    <button class="btn btn-next-round" onclick="aiIdx++; renderAiGame()">
-      <i class="fas fa-arrow-right"></i> Далее
-    </button>
+    <div class="feedback ${ok ? 'success' : 'error'}">${ok ? '✅ Правильно!' : '❌ Неверно!'}</div>
+    <p style="text-align:center; margin:16px 0;">Правильный ответ: ${g.isAI ? 'Это было сгенерировано ИИ' : 'Это было реальное изображение'}</p>
+    <button class="btn btn-next-round" onclick="aiIdx++; renderAiGame()"><i class="fas fa-arrow-right"></i> Далее</button>
   `;
 }
 
 function showPage(pid) {
-  // Скрываем все страницы
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  
-  // Показываем нужную страницу
   const targetPage = $('page-' + pid);
   if (targetPage) {
     targetPage.classList.add('active');
     window.scrollTo(0, 0);
   }
 
-  // Обновляем активную кнопку в навигации
   document.querySelectorAll('.nav-btn').forEach(btn => {
     btn.classList.remove('active');
     const onclickAttr = btn.getAttribute('onclick');
-    if (onclickAttr && onclickAttr.includes("'" + pid + "'")) {
+    if (onclickAttr && onclickAttr.includes(`'${pid}'`)) {
       btn.classList.add('active');
     }
   });
 
-  // Инициализация специфичных функций для страниц
   if (pid === 'cabinet' && typeof updateCabinet === 'function') updateCabinet();
   if (pid === 'quiz' && !window.quizStarted && typeof startQuiz === 'function') startQuiz();
   if (pid === 'ai-vs-real') initAiGame();
   if (pid === 'phishing' && typeof initPhishingGame === 'function') initPhishingGame();
 }
+
+// Инициализация при загрузке
+document.addEventListener('DOMContentLoaded', () => showPage('home'));
