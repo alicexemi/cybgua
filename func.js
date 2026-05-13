@@ -27,7 +27,9 @@ function renderAiGame() {
     container.innerHTML = `
       <div class="result-score">Результат: ${aiScore}/${aiGames.length} (${p}%)</div>
       <div class="result-grade">${gradeText}</div>
-      <button class="btn btn-next-round" onclick="initAiGame()"><i class="fas fa-redo"></i> Начать заново</button>
+      <button class="btn btn-next-round" onclick="initAiGame()">
+        <i class="fas fa-redo"></i> Начать заново
+      </button>
     `;
     if (typeof addHistory === 'function') addHistory('ai-vs-real', `AI vs Real: ${aiScore}/${aiGames.length} (${p}%)`);
     if (typeof checkAchievements === 'function') checkAchievements(p);
@@ -56,7 +58,9 @@ function aiAnswer(u) {
   container.innerHTML = `
     <div class="feedback ${ok ? 'success' : 'error'}">${ok ? '✅ Правильно!' : '❌ Неверно!'}</div>
     <p style="text-align:center; margin:16px 0;">Правильный ответ: ${g.isAI ? 'Это было сгенерировано ИИ' : 'Это было реальное изображение'}</p>
-    <button class="btn btn-next-round" onclick="aiIdx++; renderAiGame()"><i class="fas fa-arrow-right"></i> Далее</button>
+    <button class="btn btn-next-round" onclick="aiIdx++; renderAiGame()">
+      <i class="fas fa-arrow-right"></i> Далее
+    </button>
   `;
 }
 
@@ -82,5 +86,5 @@ function showPage(pid) {
   if (pid === 'phishing' && typeof initPhishingGame === 'function') initPhishingGame();
 }
 
-// Инициализация при загрузке
+// Запуск главной страницы после полной загрузки DOM
 document.addEventListener('DOMContentLoaded', () => showPage('home'));
