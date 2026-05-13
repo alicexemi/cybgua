@@ -55,7 +55,7 @@ function setupTheme() {
     const saved = localStorage.getItem('cf_theme');
     if (saved === 'dark') document.body.classList.add('dark-theme');
     
-    toggle.addEventListener('click', () => {
+    toggle?.addEventListener('click', () => {
         document.body.classList.toggle('dark-theme');
         const isDark = document.body.classList.contains('dark-theme');
         localStorage.setItem('cf_theme', isDark ? 'dark' : 'light');
@@ -65,59 +65,75 @@ function setupTheme() {
 
 // Полный экран
 function setupFullscreen() {
-    document.getElementById('fullscreen-toggle').addEventListener('click', () => {
-        if (!document.fullscreenElement) {
-            document.documentElement.requestFullscreen().catch(err => console.warn('Fullscreen blocked:', err));
-        } else if (document.exitFullscreen) {
-            document.exitFullscreen();
-        }
-    });
+    const fullscreenToggle = document.getElementById('fullscreen-toggle');
+    if (fullscreenToggle) {
+        fullscreenToggle.addEventListener('click', () => {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(err => console.warn('Fullscreen blocked:', err));
+            } else if (document.exitFullscreen) {
+                document.exitFullscreen();
+            }
+        });
+    }
 }
 
 // Профиль
 function setupProfile() {
     const nameInput = document.getElementById('name-input');
-    nameInput.value = state.profileName !== 'Гость' ? state.profileName : '';
-    document.getElementById('user-name').textContent = state.profileName;
-
-    nameInput.addEventListener('input', (e) => {
-        const val = e.target.value.trim();
-        state.profileName = val || 'Гость';
+    if (nameInput) {
+        nameInput.value = state.profileName !== 'Гость' ? state.profileName : '';
         document.getElementById('user-name').textContent = state.profileName;
-        if (val && !state.achievements.name_set) unlockAchievement('name_set');
-        saveState();
-    });
+
+        nameInput.addEventListener('input', (e) => {
+            const val = e.target.value.trim();
+            state.profileName = val || 'Гость';
+            document.getElementById('user-name').textContent = state.profileName;
+            if (val && !state.achievements.name_set) unlockAchievement('name_set');
+            saveState();
+        });
+    }
 }
 
 // Загрузчик изображений
 function setupQuizLoader() {
     const img = document.getElementById('quiz-img');
     const loader = document.getElementById('img-loader');
-    img.addEventListener('loading', () => loader.style.display = 'block');
-    img.addEventListener('load', () => loader.style.display = 'none');
-    img.addEventListener('error', () => {
-        loader.textContent = '⚠️ Ошибка загрузки';
-        loader.style.display = 'block';
-    });
+    
+    if (img && loader) {
+        // Убираем обработчик loading - это не стандартное событие
+        img.addEventListener('load', () => loader.style.display = 'none');
+        img.addEventListener('error', () => {
+            loader.textContent = '⚠️ Ошибка загрузки';
+            loader.style.display = 'block';
+        });
+    }
 }
 
 // Викторина
 function renderQuiz() {
-    document.getElementById('quiz-controls').style.display = 'flex';
-    document.getElementById('quiz-feedback').classList.add('hidden');
-    document.getElementById('quiz-results').classList.add('hidden');
+    const controls = document.getElementById('quiz-controls');
+    const feedback = document.getElementById('quiz-feedback');
+    const results = document.getElementById('quiz-results');
+    
+    if (controls) controls.style.display = 'flex';
+    if (feedback) feedback.classList.add('hidden');
+    if (results) results.classList.add('hidden');
 
     if (state.quizIndex >= questions.length) {
-        document.getElementById('quiz-controls').style.display = 'none';
-        document.getElementById('quiz-feedback').classList.add('hidden');
+        if (controls) controls.style.display = 'none';
+        if (feedback) feedback.classList.add('hidden');
         showQuizResults();
         return;
     }
 
     const q = questions[state.quizIndex];
-    document.getElementById('quiz-img').src = q.img;
-    document.querySelector('.quiz-prompt').textContent = `Вопрос ${state.quizIndex + 1}: Это фото или ИИ?`;
-    document.querySelectorAll('.ans-btn').forEach(btn => btn.disabled = false);
+    const quizImg = document.getElementById('quiz-img');
+    const prompt = document.querySelector('.quiz-prompt');
+    const buttons = document.querySelectorAll('.ans-btn');
+    
+    if (quizImg) quizImg.src = q.img;
+    if (prompt) prompt.textContent = `Вопрос ${state.quizIndex + 1}: Это фото или ИИ?`;
+    if (buttons) buttons.forEach(btn => btn.disabled = false);
 }
 
 function checkAnswer(choice) {
@@ -125,11 +141,18 @@ function checkAnswer(choice) {
     const isCorrect = choice === q.type;
     if (isCorrect) state.quizScore++;
     
-    document.querySelectorAll('.ans-btn').forEach(btn => btn.disabled = true);
-    document.getElementById('quiz-feedback').classList.remove('hidden');
-    document.getElementById('feedback-text').innerHTML = `
-        <b>${isCorrect ? '✅ Верно!' : '❌ Неверно.'}</b><br>${q.explanation}
-    `;
+    const buttons = document.querySelectorAll('.ans-btn');
+    if (buttons) buttons.forEach(btn => btn.disabled = true);
+    
+    const feedback = document.getElementById('quiz-feedback');
+    const feedbackText = document.getElementById('feedback-text');
+    
+    if (feedback) feedback.classList.remove('hidden');
+    if (feedbackText) {
+        feedbackText.innerHTML = `
+            <b>${isCorrect ? '✅ Верно!' : '❌ Неверно.'}</b><br>${q.explanation}
+        `;
+    }
     
     state.quizHistory.push({ q: `Вопрос ${state.quizIndex + 1}`, correct: isCorrect });
     logAction(`Викторина: ${isCorrect ? 'верный ответ' : 'ошибка'}`);
@@ -144,15 +167,20 @@ function nextQuestion() {
 }
 
 function showQuizResults() {
-    document.getElementById('quiz-results').classList.remove('hidden');
-    document.getElementById('final-score').textContent = `Правильных ответов: ${state.quizScore} из ${questions.length}`;
+    const results = document.getElementById('quiz-results');
+    const finalScore = document.getElementById('final-score');
+    
+    if (results) results.classList.remove('hidden');
+    if (finalScore) finalScore.textContent = `Правильных ответов: ${state.quizScore} из ${questions.length}`;
     
     const list = document.getElementById('results-list');
-    list.innerHTML = state.quizHistory.map(h => `
-        <div class="result-item ${h.correct ? 'correct' : 'wrong'}">
-            ${h.q} – ${h.correct ? 'Верно' : 'Неверно'}
-        </div>
-    `).join('');
+    if (list) {
+        list.innerHTML = state.quizHistory.map(h => `
+            <div class="result-item ${h.correct ? 'correct' : 'wrong'}">
+                ${h.q} – ${h.correct ? 'Верно' : 'Неверно'}
+            </div>
+        `).join('');
+    }
     
     if (state.quizIndex === questions.length) unlockAchievement('full_quiz');
 }
@@ -167,6 +195,8 @@ function resetQuiz() {
 // Достижения и История
 function renderAchievements() {
     const grid = document.getElementById('achievements-grid');
+    if (!grid) return;
+    
     grid.innerHTML = achievementDefs.map(def => `
         <div class="achievement ${state.achievements[def.id] ? 'unlocked' : ''}">
             <span>${def.icon}</span>
@@ -182,15 +212,21 @@ function unlockAchievement(id) {
     saveState();
     
     const def = achievementDefs.find(a => a.id === id);
-    showPopup(def);
+    if (def) showPopup(def);
 }
 
 function showPopup(def) {
     const popup = document.getElementById('achievement-popup');
-    document.getElementById('popup-title').textContent = `🎉 ${def.title}`;
-    document.getElementById('popup-desc').textContent = def.desc;
-    popup.classList.remove('hidden');
-    setTimeout(() => popup.classList.add('hidden'), 3500);
+    const title = document.getElementById('popup-title');
+    const desc = document.getElementById('popup-desc');
+    
+    if (popup) popup.classList.remove('hidden');
+    if (title) title.textContent = `🎉 ${def.title}`;
+    if (desc) desc.textContent = def.desc;
+    
+    setTimeout(() => {
+        if (popup) popup.classList.add('hidden');
+    }, 3500);
 }
 
 function logAction(action) {
@@ -201,15 +237,29 @@ function logAction(action) {
 }
 
 function renderHistory() {
-    document.getElementById('history-list').innerHTML = state.actionLog.map(h => `<li>${h}</li>`).join('');
+    const historyList = document.getElementById('history-list');
+    if (historyList) {
+        historyList.innerHTML = state.actionLog.map(h => `<li>${h}</li>`).join('');
+    }
 }
 
 // Сохранение
 function loadState() {
     const saved = localStorage.getItem('cf_platform_v1');
-    if (saved) Object.assign(state, JSON.parse(saved));
+    if (saved) {
+        try {
+            const parsed = JSON.parse(saved);
+            Object.assign(state, parsed);
+        } catch (e) {
+            console.error('Ошибка при загрузке состояния:', e);
+        }
+    }
 }
 
 function saveState() {
-    localStorage.setItem('cf_platform_v1', JSON.stringify(state));
+    try {
+        localStorage.setItem('cf_platform_v1', JSON.stringify(state));
+    } catch (e) {
+        console.error('Ошибка при сохранении состояния:', e);
+    }
 }
