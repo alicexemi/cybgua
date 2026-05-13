@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
@@ -52,18 +53,18 @@
     <!-- Главная -->
     <div id="page-home" class="page active">
       <h1>Добро пожаловать в Cyber Guard</h1>
-      <p>Научись безопасно вести себя в интернете, распознавать мошенников и защищать свои данные. Выбирай раздел и начинай обучение!</p>
+      <p>Научись безопасно вести себя в интернете, распознавать мошенников и защищать свои данные.</p>
       <div class="home-buttons">
         <button class="btn btn-primary" onclick="showPage('quiz')">Начать тест</button>
         <button class="btn btn-secondary" onclick="showPage('memo')">Памятка</button>
       </div>
       <h2>Разделы</h2>
       <div class="grid">
-        <div class="card" onclick="showPage('quiz')"><h3>📝 Тест</h3><p>Проверь свои знания по кибербезопасности</p></div>
+        <div class="card" onclick="showPage('quiz')"><h3>📝 Тест</h3><p>Проверь свои знания</p></div>
         <div class="card" onclick="showPage('ai-vs-real')"><h3>🤖 AI vs Real</h3><p>Отличай реальные фото от генераций</p></div>
         <div class="card" onclick="showPage('password')"><h3>🔐 Пароль</h3><p>Генератор надёжных паролей</p></div>
         <div class="card" onclick="showPage('links')"><h3>🔗 Ссылки</h3><p>Проверка безопасности URL</p></div>
-        <div class="card" onclick="showPage('memo')"><h3>📖 Памятка</h3><p>Полезные советы по безопасности</p></div>
+        <div class="card" onclick="showPage('memo')"><h3>📖 Памятка</h3><p>Советы по безопасности</p></div>
         <div class="card" onclick="showPage('scammers')"><h3>🕵️ Мошенники</h3><p>Виды мошенников и защита</p></div>
         <div class="card" onclick="showPage('scanner')"><h3>🛡️ Сканер</h3><p>Проверка файлов на вирусы</p></div>
         <div class="card" onclick="showPage('phishing')"><h3>🎣 Фишинг</h3><p>Распознавание фишинговых писем</p></div>
@@ -73,22 +74,22 @@
     <!-- AI vs Real -->
     <div id="page-ai-vs-real" class="page">
       <h2>🎬 AI vs Real</h2>
-      <p>Посмотри на изображение и попробуй определить: это реальное фото или сгенерировано нейросетью?</p>
+      <p>Посмотри на изображение и определи: реальное фото или нейросеть?</p>
       <div class="tips">
         <h3>Как отличить фейк?</h3>
         <ul>
-          <li>👁️ <strong>Обрати внимание на глаза</strong> — неестественные зрачки, разный размер глаз или странное отражение</li>
-          <li>🖐️ <strong>Посмотри на руки и пальцы</strong> — лишние/недостающие пальцы, неестественные суставы</li>
-          <li>📝 <strong>Проверь текст на изображении</strong> — бессмысленные символы или искажённые буквы</li>
-          <li>🌊 <strong>Фон и детали</strong> — размытый или нелогичный фон, странные тени и отражения</li>
-          <li>👂 <strong>Уши и аксессуары</strong> — асимметричные уши, странные серьги или неправильно надетые очки</li>
-          <li>🔍 <strong>Общая реалистичность</strong> — слишком идеальная кожа, неестественные пропорции</li>
+          <li>👁️ <strong>Глаза</strong> — неестественные зрачки, разный размер</li>
+          <li>🖐️ <strong>Руки</strong> — лишние/недостающие пальцы</li>
+          <li>📝 <strong>Текст</strong> — бессмысленные символы</li>
+          <li>🌊 <strong>Фон</strong> — странные тени и отражения</li>
+          <li>👂 <strong>Уши/аксессуары</strong> — асимметрия, кривые серьги</li>
+          <li>🔍 <strong>Реалистичность</strong> — слишком идеальная кожа</li>
         </ul>
       </div>
       <div id="aiGameArea"></div>
     </div>
 
-    <!-- Остальные страницы-заглушки -->
+    <!-- Заглушки для остальных страниц -->
     <div id="page-quiz" class="page"><h2>📝 Тест</h2><p>Раздел в разработке...</p></div>
     <div id="page-phishing" class="page"><h2>🎣 Симулятор фишинга</h2><p>Раздел в разработке...</p></div>
     <div id="page-password" class="page"><h2>🔐 Генератор паролей</h2><p>Раздел в разработке...</p></div>
@@ -100,7 +101,7 @@
   </main>
 
   <div class="cookie-banner" id="cookieBanner">
-    <p>🍪 Этот сайт использует cookie-файлы и localStorage для сохранения вашего прогресса. Продолжая использовать сайт, вы соглашаетесь с этим.</p>
+    <p>🍪 Этот сайт использует cookie и localStorage для сохранения прогресса.</p>
     <div style="display:flex; gap:10px;">
       <button class="btn btn-success" onclick="document.getElementById('cookieBanner').style.display='none'">Принять</button>
       <button class="btn btn-danger" onclick="document.getElementById('cookieBanner').style.display='none'">Отклонить</button>
