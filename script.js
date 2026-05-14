@@ -89,7 +89,6 @@ function declineCookies() {
 })();
 
 // --- ТЕСТ (QUIZ) ---
-// Расширенный список вопросов
 const quizQuestions = [
     { q: "Что такое фишинг?", opts: ["Вид рыбалки", "Поддельные письма/сайты для кражи данных", "Антивирусная программа", "Социальная сеть"], correct: 1 },
     { q: "Какой пароль самый надёжный?", opts: ["12345678", "qwerty", "K#9mP$xL2vQ!nR", "password123"], correct: 2 },
@@ -210,7 +209,7 @@ function showQuizResult() {
     
     addHistory('quiz', `Тест: ${correctCount}/${totalCount} (${percentage}%)`);
     checkAchievements(percentage);
-    if (percentage >= 80) launchConfetti();
+    if (percentage >= 80) launchConfetti(); // Теперь эта функция определена ниже
 }
 
 function showCertInput() {
@@ -352,7 +351,7 @@ function showNotification(message) {
 // --- AI VS REAL ---
 const aiGames = [
     { title: "Портрет девушки", desc: "Реальное фото или ИИ?", isAI: false, img: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=600&q=80", clue: "Обрати внимание на текстуру кожи и блики в глазах" },
-    { title: "Пейзаж с водой", desc: "Реальное фото или генерация?", isAI: true, img: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=600&q=80", clue: "Проверь отражения в воде и детали листвы (это реальное фото для примера, но в игре можно подменить)" },
+    { title: "Пейзаж с водой", desc: "Реальное фото или генерация?", isAI: true, img: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=600&q=80", clue: "Проверь отражения в воде и детали листвы" },
     { title: "Городской кадр", desc: "Фото или нейросеть?", isAI: false, img: "https://images.unsplash.com/photo-1477959858617-67f85cf4f1df?auto=format&fit=crop&w=600&q=80", clue: "Посмотри на архитектуру и тени" },
     { title: "Кот в очках", desc: "Реальное или сгенерированное?", isAI: true, img: "https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?auto=format&fit=crop&w=600&q=80", clue: "Обрати внимание на лапы и усы" }
 ];
@@ -731,10 +730,9 @@ function phishAnswer(userChoice) {
 
 // --- ОБЩИЕ ФУНКЦИИ ---
 function showMemoTab(tabId, btn) {
-    // Скрыть все табы в текущем контексте (родительский контейнер)
     const parent = btn.closest('.page');
     parent.querySelectorAll('.memo-tab').forEach(t => t.style.display = 'none');
-    $(`memoTab-${tabId}`).style.display = 'block'; // Исправлено ID
+    $(`memoTab-${tabId}`).style.display = 'block';
     
     parent.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
@@ -847,8 +845,11 @@ function updateCabinet() {
     $('historyList').innerHTML = historyHTML;
 }
 
+// --- КОНФЕТТИ (ИСПРАВЛЕНИЕ ОШИБКИ) ---
 function launchConfetti() {
     const container = $('confettiContainer');
+    if (!container) return; // Защита от ошибки, если элемента нет
+    
     const colors = ['#6c5ce7', '#a855f7', '#06b6d4', '#10b981', '#f59e0b'];
     container.innerHTML = '';
     for (let i = 0; i < 50; i++) {
