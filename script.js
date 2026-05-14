@@ -350,10 +350,10 @@ function showNotification(message) {
 
 // --- AI VS REAL ---
 const aiGames = [
-    { title: "Портрет девушки", desc: "Реальное фото или ИИ?", isAI: false, img: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=600&q=80", clue: "Обрати внимание на текстуру кожи и блики в глазах" },
-    { title: "Пейзаж с водой", desc: "Реальное фото или генерация?", isAI: true, img: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=600&q=80", clue: "Проверь отражения в воде и детали листвы" },
-    { title: "Городской кадр", desc: "Фото или нейросеть?", isAI: false, img: "https://images.unsplash.com/photo-1477959858617-67f85cf4f1df?auto=format&fit=crop&w=600&q=80", clue: "Посмотри на архитектуру и тени" },
-    { title: "Кот в очках", desc: "Реальное или сгенерированное?", isAI: true, img: "https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?auto=format&fit=crop&w=600&q=80", clue: "Обрати внимание на лапы и усы" }
+    { title: "Портрет девушки", desc: "Реальное фото или ИИ?", isAI: false, img: "https://avatars.mds.yandex.net/i?id=fd746422af0d2578e8779149c789ca9321e5a262-12527616-images-thumbs&n=13", clue: "Обрати внимание на текстуру кожи и блики в глазах" },
+    { title: "Пейзаж с водой", desc: "Реальное фото или генерация?", isAI: true, img: "https://avatars.mds.yandex.net/i?id=26332d7382dfd8fcbe26cc0cc69501bf919d0983-5331839-images-thumbs&n=13", clue: "Проверь отражения в воде и детали листвы" },
+    { title: "Городской кадр", desc: "Фото или нейросеть?", isAI: false, img: "https://avatars.mds.yandex.net/i?id=27bfbb3e10cd4d076b3daab2325f9045d006da66-4949521-images-thumbs&n=13", clue: "Посмотри на архитектуру и тени" },
+    { title: "Кот", desc: "Реальное или сгенерированное?", isAI: true, img: "https://avatars.mds.yandex.net/i?id=ba6aebf9a076850f236e434c3e54fa47682ef8bf-4577889-images-thumbs&n=13", clue: "Обрати внимание на лапы и усы" }
 ];
 
 let aiIdx = 0, aiScore = 0, aiGameStarted = false;
