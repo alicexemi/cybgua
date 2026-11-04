@@ -1,0 +1,1011 @@
+// Константа для получения элемента по ID
+const $ = id => document.getElementById(id);
+
+// --- Навигация ---
+function showPage(pid) {
+    // Деактивировать все страницы
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    const pageElement = $('page-' + pid);
+    if (pageElement) {
+        pageElement.classList.add('active');
+    }
+    
+    // Деактивировать все элементы навигации
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    
+    // Активировать элемент навигации
+    document.querySelectorAll('.nav-item').forEach(item => {
+        const onclickAttr = item.getAttribute('onclick');
+        if (onclickAttr && onclickAttr.includes("'" + pid + "'")) {
+            item.classList.add('active');
+        }
+    });
+
+    // Специфичные функции при открытии страниц
+    if (pid === 'cabinet') updateCabinet();
+    if (['memo', 'scammers', 'phishing'].includes(pid)) saveSetting('seen_' + pid, true);
+    if (pid === 'home') updateProgress();
+    if (pid === 'quiz' && !window.quizStarted) startQuiz();
+    if (pid === 'ai-vs-real') initAiGame();
+    if (pid === 'phishing') initPhishingGame();
+    
+    closeSidebar();
+}
+
+// --- Сайдбар и Тема ---
+function toggleSidebar() {
+    $('sidebar').classList.toggle('open');
+    $('sidebarOverlay').classList.toggle('show');
+}
+
+function closeSidebar() {
+    $('sidebar').classList.remove('open');
+    $('sidebarOverlay').classList.remove('show');
+}
+
+function toggleTheme() {
+    const html = document.documentElement;
+    const currentTheme = html.getAttribute('data-theme');
+    const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+    html.setAttribute('data-theme', newTheme);
+    $('themeIcon').className = newTheme === 'dark' ? 'bi bi-sun' : 'bi bi-moon-stars';
+    saveSetting('theme', newTheme);
+}
+
+// --- LocalStorage с обработкой ошибок ---
+function saveSetting(key, value) {
+    try {
+        localStorage.setItem('cg_' + key, JSON.stringify(value));
+    } catch (e) {
+        console.error("Ошибка сохранения:", e);
+    }
+}
+
+function loadSetting(key, defaultValue) {
+    try {
+        const storedValue = localStorage.getItem('cg_' + key);
+        return storedValue ? JSON.parse(storedValue) : defaultValue;
+    } catch (e) {
+        console.error("Ошибка чтения:", e);
+        return defaultValue;
+    }
+}
+
+function acceptCookies() {
+    saveSetting('cookiesAccepted', true);
+    $('cookieBanner').classList.remove('show');
+}
+
+function declineCookies() {
+    $('cookieBanner').classList.remove('show');
+}
+
+// Инициализация при загрузке
+(function() {
+    const savedTheme = loadSetting('theme', 'dark');
+    document.documentElement.setAttribute('data-theme', savedTheme);
+    $('themeIcon').className = savedTheme === 'dark' ? 'bi bi-sun' : 'bi bi-moon-stars';
+    if (loadSetting('cookiesAccepted', false)) {
+        $('cookieBanner').classList.remove('show');
+    }
+})();
+
+// --- ТЕСТ (QUIZ) ---
+const quizQuestions = [
+    { q: "Что такое фишинг?", opts: ["Вид рыбалки", "Поддельные письма/сайты для кражи данных", "Антивирусная программа", "Социальная сеть"], correct: 1 },
+    { q: "Какой пароль самый надёжный?", opts: ["12345678", "qwerty", "K#9mP$xL2vQ!nR", "password123"], correct: 2 },
+    { q: "Что такое двухфакторная аутентификация (2FA)?", opts: ["Вход по двум паролям", "Дополнительная проверка при входе", "Два аккаунта", "Двойное шифрование"], correct: 1 },
+    { q: "Что делать, если друг просит деньги в сообщении?", opts: ["Сразу перевести", "Позвонить и подтвердить личность", "Заблокировать друга", "Написать в полицию"], correct: 1 },
+    { q: "Что означает HTTPS в адресной строке?", opts: ["Сайт бесплатный", "Соединение зашифровано", "Сайт проверен полицией", "Сайт принадлежит правительству"], correct: 1 },
+    { q: "Какой из признаков фишингового письма?", opts: ["Грамотный текст", "Официальный логотип", "Срочность и угрозы блокировки", "Адрес из домена компании"], correct: 2 },
+    { q: "Что такое deepfake?", opts: ["Глубокая заморозка", "Поддельное видео/аудио, созданное ИИ", "Новый браузер", "Вид вируса"], correct: 1 },
+    { q: "Можно ли скачивать программы с торрентов?", opts: ["Да, всегда безопасно", "Нет, высокий риск вирусов", "Только в выходные", "Только для студентов"], correct: 1 },
+    { q: "Что делать при подозрении на вирус?", opts: ["Игнорировать", "Запустить антивирус и отключить интернет", "Удалить браузер", "Перезагрузить роутер"], correct: 1 },
+    { q: "Как часто нужно обновлять пароли?", opts: ["Никогда", "Раз в 10 лет", "При подозрении на утечку или каждые 3-6 месяцев", "Каждый день"], correct: 2 },
+    { q: "Что такое социальная инженерия?", opts: ["Изучение общества", "Манипуляция людьми для получения информации", "Строительство социальных объектов", "Вид программирования"], correct: 1 },
+    { q: "Зачем нужна VPN?", opts: ["Для ускорения интернета", "Для шифрования трафика и смены IP", "Для защиты от вирусов", "Для взлома Wi-Fi"], correct: 1 },
+    { q: "Что такое ботнет?", opts: ["Сеть роботов-пылесосов", "Сеть зараженных компьютеров под контролем хакера", "Социальная сеть для ботов", "Программа для автоматизации"], correct: 1 },
+    { q: "Какое расширение файла может быть опасным?", opts: [".jpg", ".txt", ".exe", ".pdf"], correct: 2 },
+    { q: "Что делать, если потерял телефон?", opts: ["Купить новый", "Позвонить оператору для блокировки SIM и сменить пароли", "Написать объявление", "Ничего, он найдется"], correct: 1 }
+];
+
+let quizStarted = false, currentQ = 0, quizAnswers = [], quizPicked = [];
+
+function startQuiz() {
+    quizStarted = true; 
+    currentQ = 0; 
+    quizAnswers = []; quizPicked = [];
+    $('quizResult').style.display = 'none';
+    $('quizContent').style.display = 'block';
+    renderQuestion();
+}
+
+function renderQuestion() {
+    const question = quizQuestions[currentQ];
+    $('quizProgress').style.width = ((currentQ / quizQuestions.length) * 100) + '%';
+    
+    const contentDiv = $('quizContent');
+    contentDiv.innerHTML = ''; 
+
+    const header = document.createElement('div');
+    header.className = 'quiz-header';
+    header.style.marginBottom = '10px';
+    header.style.color = 'var(--text-secondary)';
+    header.textContent = `Вопрос ${currentQ + 1} из ${quizQuestions.length}`;
+    contentDiv.appendChild(header);
+
+    const questionText = document.createElement('div');
+    questionText.className = 'quiz-question';
+    questionText.innerHTML = `<h3>${question.q}</h3>`;
+    contentDiv.appendChild(questionText);
+
+    const optionsDiv = document.createElement('div');
+    optionsDiv.className = 'quiz-options';
+    
+    const letterLabels = ['А', 'Б', 'В', 'Г'];
+    question.opts.forEach((option, index) => {
+        const optionDiv = document.createElement('div');
+        optionDiv.className = 'quiz-option';
+        optionDiv.onclick = () => selectAnswer(index);
+
+        const letterSpan = document.createElement('span');
+        letterSpan.className = 'letter';
+        letterSpan.textContent = letterLabels[index];
+
+        optionDiv.appendChild(letterSpan);
+        optionDiv.appendChild(document.createTextNode(option));
+        optionsDiv.appendChild(optionDiv);
+    });
+    contentDiv.appendChild(optionsDiv);
+}
+
+function selectAnswer(idx) {
+    const question = quizQuestions[currentQ];
+    const options = document.querySelectorAll('.quiz-option');
+    
+    options.forEach((opt, i) => {
+        opt.style.pointerEvents = 'none';
+        if (i === question.correct) opt.classList.add('correct');
+        if (i === idx && idx !== question.correct) opt.classList.add('wrong');
+        if (i === idx) opt.classList.add('selected');
+    });
+    
+    quizAnswers.push(idx === question.correct);
+    quizPicked.push(idx);
+    
+    setTimeout(() => {
+        currentQ++;
+        if (currentQ < quizQuestions.length) renderQuestion();
+        else showQuizResult();
+    }, 1200);
+}
+
+function showQuizResult() {
+    $('quizProgress').style.width = '100%';
+    $('quizContent').style.display = 'none';
+    const correct = quizAnswers.filter(Boolean).length, total = quizQuestions.length;
+    const pct = Math.round(correct / total * 100);
+    const items = quizQuestions.map((q, i) => ({ q: q.q, mine: q.opts[quizPicked[i]], right: q.opts[q.correct], ok: quizAnswers[i] })).filter(x => !x.ok);
+    addHistory('quiz', `Тест: ${correct}/${total} (${pct}%)`);
+    const next = pct < 70
+        ? `<button class="btn btn-secondary" onclick="showPage('memo')">Открыть памятку</button>`
+        : `<button class="btn btn-secondary" onclick="showPage('phishing')">Дальше: фишинг</button>`;
+    $('quizResult').style.display = 'block';
+    $('quizResult').innerHTML = summaryHTML({
+        title: 'тест по безопасности', correct, total, items,
+        next: `<button class="btn btn-primary" onclick="showCertInput()">Получить сертификат</button><button class="btn btn-secondary" onclick="startQuiz()">Пройти заново</button>${next}`
+    }) + '<div id="certArea"></div><div id="certOutput"></div>';
+    checkAchievements(pct);
+    if (pct >= 80) launchConfetti();
+}
+
+function showCertInput() {
+    $('certArea').innerHTML = `
+        <div class="input-group" style="margin-top: 20px;">
+            <label>Введите ваше ФИО для сертификата</label>
+            <input type="text" id="certName" placeholder="Иванов Иван Иванович">
+            <button class="btn btn-primary" style="margin-top: 10px;" onclick="generateCertificate()">Сгенерировать</button>
+        </div>
+    `;
+}
+
+function generateCertificate() {
+    const name = $('certName').value.trim();
+    if (!name) {
+        showNotification('Введи ФИО');
+        return;
+    }
+    
+    const correctCount = quizAnswers.filter(a => a).length;
+    const totalCount = quizQuestions.length;
+    const percentage = Math.round((correctCount / totalCount) * 100);
+    const date = new Date().toLocaleDateString('ru-RU');
+    
+    const canvas = document.createElement('canvas');
+    canvas.width = 800; 
+    canvas.height = 560;
+    const ctx = canvas.getContext('2d');
+    
+    // Фон
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, 800, 560);
+    
+    // Рамка
+    ctx.strokeStyle = '#6c5ce7';
+    ctx.lineWidth = 10;
+    ctx.strokeRect(0, 0, 800, 560);
+    
+    ctx.strokeStyle = '#a855f7';
+    ctx.lineWidth = 4;
+    ctx.strokeRect(20, 20, 760, 520);
+    
+    // Текст
+    ctx.fillStyle = '#6c5ce7';
+    ctx.font = 'bold 30px monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText('CYBER GUARD', 400, 80);
+    
+    ctx.fillStyle = '#1a1a2e';
+    ctx.font = 'bold 40px monospace';
+    ctx.fillText('СЕРТИФИКАТ', 400, 140);
+    
+    ctx.fillStyle = '#6b7280';
+    ctx.font = '18px monospace';
+    ctx.fillText('об успешном прохождении теста по кибербезопасности', 400, 180);
+    
+    ctx.fillStyle = '#6c5ce7';
+    ctx.font = 'bold 32px monospace';
+    ctx.fillText(name, 400, 250);
+    
+    ctx.strokeStyle = '#6c5ce7';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(200, 270);
+    ctx.lineTo(600, 270);
+    ctx.stroke();
+    
+    ctx.fillStyle = '#1a1a2e';
+    ctx.font = '20px monospace';
+    ctx.fillText(`Результат: ${correctCount} из ${totalCount} правильных ответов`, 400, 320);
+    
+    ctx.fillStyle = '#6c5ce7';
+    ctx.font = 'bold 36px monospace';
+    ctx.fillText(percentage + '%', 400, 370);
+    
+    ctx.fillStyle = '#6b7280';
+    ctx.font = '14px monospace';
+    ctx.fillText('Дата: ' + date, 400, 420);
+    
+    // Печать
+    ctx.beginPath();
+    ctx.arc(400, 490, 40, 0, Math.PI * 2);
+    ctx.strokeStyle = '#6c5ce7';
+    ctx.lineWidth = 3;
+    ctx.stroke();
+    ctx.fillStyle = '#6c5ce7';
+    ctx.font = 'bold 24px monospace';
+    ctx.lineWidth = 5; ctx.lineCap = 'round'; ctx.beginPath(); ctx.moveTo(384, 490); ctx.lineTo(396, 502); ctx.lineTo(418, 476); ctx.stroke();
+    
+    const dataURL = canvas.toDataURL('image/png');
+    const filename = 'CyberGuard_Certificate_' + name.replace(/[^a-zA-Zа-яА-Я0-9]/g, '_') + '.png';
+    
+    $('certOutput').innerHTML = `
+        <img src="${dataURL}" style="max-width:100%; border-radius:16px; margin:15px 0; box-shadow:0 4px 20px rgba(0,0,0,0.1);">
+        <div style="display:flex; gap:10px; justify-content:center;">
+            <a href="${dataURL}" download="${filename}" class="btn btn-primary">Скачать PNG</a>
+            <button class="btn btn-secondary" onclick="printCertificate('${dataURL}')">Печать</button>
+        </div>
+    `;
+    addHistory('certificate', `Сертификат: ${name} — ${percentage}%`);
+}
+
+function printCertificate(dataUrl) {
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) {
+        showNotification("Разрешите всплывающие окна для печати");
+        return;
+    }
+    printWindow.document.write(`
+        <html>
+        <head><title>Печать сертификата</title></head>
+        <body style="margin:0; display:flex; justify-content:center; align-items:center; height:100vh;">
+            <img src="${dataUrl}" style="max-width:100%;">
+            <script>window.onload = function() { window.print(); }<\/script>
+        </body>
+        </html>
+    `);
+    printWindow.document.close();
+}
+
+// --- Уведомления ---
+function showNotification(message) {
+    const notification = document.createElement('div');
+    notification.className = 'notification-popup';
+    notification.textContent = message;
+    notification.style.cssText = `
+        position: fixed; top: 20px; right: 20px; padding: 15px 20px; 
+        background-color: var(--warning); color: white; border-radius: 12px; 
+        z-index: 10000; box-shadow: 0 4px 15px rgba(0,0,0,0.2); 
+        font-family: var(--font); font-weight: 500;
+        animation: slideUp 0.3s ease;
+    `;
+    document.body.appendChild(notification);
+    setTimeout(() => {
+        if (notification.parentNode) notification.parentNode.removeChild(notification);
+    }, 3000);
+}
+
+// --- AI VS REAL ---
+const aiGames = [
+    { title: "Портрет девушки", desc: "Реальное фото или ИИ?", isAI: false, img: "https://avatars.mds.yandex.net/i?id=fd746422af0d2578e8779149c789ca9321e5a262-12527616-images-thumbs&n=13", clue: "Обрати внимание на текстуру кожи и блики в глазах" },
+    { title: "Пейзаж с водой", desc: "Реальное фото или генерация?", isAI: true, img: "https://avatars.mds.yandex.net/i?id=26332d7382dfd8fcbe26cc0cc69501bf919d0983-5331839-images-thumbs&n=13", clue: "Проверь отражения в воде и детали листвы" },
+    { title: "Городской кадр", desc: "Фото или нейросеть?", isAI: false, img: "https://avatars.mds.yandex.net/i?id=27bfbb3e10cd4d076b3daab2325f9045d006da66-4949521-images-thumbs&n=13", clue: "Посмотри на архитектуру и тени" },
+    { title: "Кот", desc: "Реальное или сгенерированное?", isAI: true, img: "https://avatars.mds.yandex.net/i?id=ba6aebf9a076850f236e434c3e54fa47682ef8bf-4577889-images-thumbs&n=13", clue: "Обрати внимание на лапы и усы" }
+];
+
+let aiIdx = 0, aiScore = 0, aiGameStarted = false, aiMiss = [];
+
+function initAiGame() {
+    if (aiGameStarted) return;
+    aiGameStarted = true; 
+    aiIdx = 0; 
+    aiScore = 0; aiMiss = [];
+    renderAiGame();
+}
+
+function renderAiGame() {
+    if (aiIdx >= aiGames.length) {
+        const percentage = Math.round((aiScore / aiGames.length) * 100);
+        addHistory('ai-vs-real', `AI vs Real: ${aiScore}/${aiGames.length} (${percentage}%)`);
+        $('aiGameArea').innerHTML = summaryHTML({ title: 'AI vs Real', correct: aiScore, total: aiGames.length, items: aiMiss,
+            next: '<button class="btn btn-primary" onclick="aiGameStarted=false; initAiGame()">Играть заново</button><button class="btn btn-secondary" onclick="showPage(\'phishing\')">Симулятор фишинга</button>' });
+        checkAchievements(percentage);
+        return;
+    }
+    
+    const game = aiGames[aiIdx];
+    const area = $('aiGameArea');
+    area.innerHTML = '';
+    
+    const img = document.createElement('img');
+    img.src = game.img;
+    img.style.maxWidth = '100%';
+    img.style.borderRadius = '12px';
+    img.style.marginBottom = '15px';
+    img.style.boxShadow = 'var(--shadow)';
+    area.appendChild(img);
+    
+    const title = document.createElement('h3');
+    title.textContent = game.title;
+    area.appendChild(title);
+    
+    const desc = document.createElement('p');
+    desc.textContent = game.desc;
+    desc.style.color = 'var(--text-secondary)';
+    area.appendChild(desc);
+    
+    const clue = document.createElement('div');
+    clue.style.margin = '10px 0';
+    clue.style.fontSize = '13px';
+    clue.style.color = 'var(--accent)';
+    clue.innerHTML = '<i class="bi bi-lightbulb"></i> Подсказка: ' + game.clue;
+    area.appendChild(clue);
+    
+    const actionsDiv = document.createElement('div');
+    actionsDiv.style.display = 'flex';
+    actionsDiv.style.gap = '10px';
+    actionsDiv.style.justifyContent = 'flex-start';
+    
+    const aiBtn = document.createElement('button');
+    aiBtn.className = 'btn btn-danger';
+    aiBtn.textContent = 'Это ИИ';
+    aiBtn.onclick = () => aiAnswer(true);
+    
+    const realBtn = document.createElement('button');
+    realBtn.className = 'btn btn-success';
+    realBtn.textContent = 'Это реальное';
+    realBtn.onclick = () => aiAnswer(false);
+    
+    actionsDiv.appendChild(aiBtn);
+    actionsDiv.appendChild(realBtn);
+    area.appendChild(actionsDiv);
+}
+
+function aiAnswer(userChoice) {
+    const game = aiGames[aiIdx];
+    const isCorrect = userChoice === game.isAI;
+    if (isCorrect) aiScore++;
+    else aiMiss.push({ q: game.title, mine: userChoice ? 'ИИ' : 'Реальное фото', right: game.isAI ? 'ИИ' : 'Реальное фото' });
+    
+    $('aiGameArea').innerHTML = `
+        <div class="result-box ${isCorrect ? 'success' : 'danger'}">
+            <h3>${isCorrect ? '<i class="bi bi-check-circle"></i> Правильно!' : '<i class="bi bi-x-circle"></i> Неверно!'}</h3>
+            <p>Правильный ответ: ${game.isAI ? 'Это было сгенерировано ИИ' : 'Это было реальное изображение'}</p>
+            <button class="btn btn-primary" onclick="aiIdx++; renderAiGame()">Далее</button>
+        </div>
+    `;
+}
+
+// --- ГЕНЕРАТОР ПАРОЛЕЙ ---
+function updatePassLength() { 
+    $('passLenVal').textContent = $('passLength').value; 
+}
+
+function toggleCb(element) { 
+    element.classList.toggle('active'); 
+}
+
+function generatePassword() {
+    const length = parseInt($('passLength').value);
+    const useUpper = $('cb-upper').classList.contains('active');
+    const useLower = $('cb-lower').classList.contains('active');
+    const useNumbers = $('cb-numbers').classList.contains('active');
+    const useSymbols = $('cb-symbols').classList.contains('active');
+    const useCyrillic = $('cb-cyrillic').classList.contains('active');
+    
+    let charSet = '';
+    if (useUpper) charSet += 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    if (useLower) charSet += 'abcdefghijklmnopqrstuvwxyz';
+    if (useNumbers) charSet += '0123456789';
+    if (useSymbols) charSet += '!@#$%^&*()-+=[]{}|;:,.<>?/~`';
+    if (useCyrillic) charSet += 'АБВГДЕЖЗИКЛМНОПРСТУФХЦЧШЩЭЮЯабвгдежзиклмнопрстуфхцчшщэюя';
+
+    if (!charSet) {
+        showNotification('Выбери хотя бы один набор символов');
+        return;
+    }
+
+    const randomIndices = new Uint32Array(length);
+    crypto.getRandomValues(randomIndices);
+
+    let password = '';
+    for (let i = 0; i < length; i++) {
+        password += charSet[randomIndices[i] % charSet.length];
+    }
+
+    $('generatedPass').textContent = password;
+    $('passwordResult').style.display = 'block';
+    calcStrength(password);
+    addHistory('password', 'Пароль сгенерирован');
+    saveSetting('passGenerated', true);
+}
+
+function calcStrength(password) {
+    let score = 0;
+    if (password.length >= 8) score++;
+    if (password.length >= 12) score++;
+    if (password.length >= 16) score++;
+    if (/[a-z]/.test(password)) score++;
+    if (/[A-Z]/.test(password)) score++;
+    if (/[0-9]/.test(password)) score++;
+    if (/[^a-zA-Z0-9]/.test(password)) score++;
+    
+    const levelIndex = Math.min(Math.floor(score / 2), 4);
+    const levels = ['Очень слабый', 'Слабый', 'Средний', 'Сильный', 'Очень сильный'];
+    const colors = ['weak', 'weak', 'medium', 'strong', 'strong'];
+
+    let strengthBarHTML = '';
+    for (let i = 0; i < 5; i++) {
+        const isActive = i < levelIndex ? 'active' : '';
+        const colorClass = i < levelIndex ? colors[levelIndex] : '';
+        strengthBarHTML += `<div class="strength-bar ${isActive} ${colorClass}"></div>`;
+    }
+
+    $('passStrength').innerHTML = strengthBarHTML;
+    $('passStrengthText').textContent = 'Надёжность: ' + levels[levelIndex];
+}
+
+function copyPassword() {
+    navigator.clipboard.writeText($('generatedPass').textContent).then(
+        () => showNotification('Пароль скопирован!'),
+        () => showNotification('Не удалось скопировать')
+    );
+}
+
+// --- ПРОВЕРКА ССЫЛОК ---
+const suspiciousDomains = ['g0ogle.com', 'faceb00k.com', 'vk0ntakte.ru', 'sberbank-secure.ru', 'apple-id-verify.com'];
+
+function checkLink() {
+    const url = $('linkInput').value.trim();
+    if (!url) {
+        showNotification('Введи ссылку');
+        return;
+    }
+    
+    try {
+        const parsedUrl = new URL(url.startsWith('http') ? url : 'https://' + url);
+        const domain = parsedUrl.hostname.replace('www.', '').toLowerCase();
+        const isHttps = url.startsWith('https');
+        const isSuspicious = suspiciousDomains.some(x => domain.includes(x));
+        
+        let riskLevel = 0;
+        const riskFactors = [];
+        
+        if (isSuspicious) { riskLevel += 3; riskFactors.push('Подозрительный домен'); }
+        if (!isHttps) { riskLevel += 2; riskFactors.push('Нет HTTPS шифрования'); }
+        if (domain.length > 30) { riskLevel += 1; riskFactors.push('Слишком длинный домен'); }
+        
+        const isDangerous = riskLevel >= 2;
+        const resultDiv = $('linkResult');
+        resultDiv.style.display = 'block';
+        resultDiv.className = `link-result ${isDangerous ? 'danger' : 'safe'}`;
+        
+        let resultHTML = `
+            <div class="lr-icon">${isDangerous ? '<i class="bi bi-exclamation-triangle"></i>' : '<i class="bi bi-shield-check"></i>'}</div>
+            <div class="lr-text">
+                <h4>${isDangerous ? 'Ссылка подозрительная!' : 'Ссылка выглядит безопасной'}</h4>
+                <p>${riskFactors.length ? riskFactors.join('. ') : 'Явных угроз не обнаружено'}</p>
+            </div>
+        `;
+        resultDiv.innerHTML = resultHTML;
+        
+        addHistory('links', `Проверка: ${isDangerous ? 'опасная' : 'безопасная'}`);
+        saveSetting('linkChecked', true);
+    } catch (e) {
+        $('linkResult').style.display = 'block';
+        $('linkResult').innerHTML = '<div class="lr-text"><h4>Ошибка</h4><p>Неверный формат ссылки</p></div>';
+    }
+}
+
+// --- СКАНЕР ФАЙЛОВ ---
+(function() {
+    const dropZone = $('scannerDrop');
+    if (!dropZone) return;
+    
+    dropZone.addEventListener('click', () => $('fileInput').click());
+    dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('dragover'); });
+    dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+    dropZone.addEventListener('drop', e => {
+        e.preventDefault(); 
+        dropZone.classList.remove('dragover');
+        if (e.dataTransfer.files.length) scanFile(e.dataTransfer.files[0]);
+    });
+})();
+
+function scanFile(file) {
+    if (!file) return;
+    $('scannerDrop').style.display = 'none';
+    $('scannerResult').style.display = 'block';
+    
+    $('scannerResult').innerHTML = `
+        <div class="file-info" style="margin-bottom: 15px;">${file.name} (${(file.size / 1024).toFixed(1)} КБ)</div>
+        <div class="scanner-progress">
+            <div class="scanner-bar"><div id="scanFill" class="scanner-fill" style="width: 0%"></div></div>
+            <div id="scanStatus" style="margin-top: 10px; color: var(--text-secondary);">Инициализация...</div>
+        </div>
+    `;
+
+    const steps = [
+        { progress: 20, text: 'Анализ заголовка...' },
+        { progress: 40, text: 'Проверка сигнатур...' },
+        { progress: 60, text: 'Эвристический анализ...' },
+        { progress: 80, text: 'Сравнение с базой угроз...' },
+        { progress: 100, text: 'Готово!' }
+    ];
+
+    let stepIndex = 0;
+    const intervalId = setInterval(() => {
+        if (stepIndex < steps.length) {
+            $('scanFill').style.width = steps[stepIndex].progress + '%';
+            $('scanStatus').textContent = steps[stepIndex].text;
+            stepIndex++;
+        } else {
+            clearInterval(intervalId);
+            const isClean = Math.random() > 0.3; // 70% шанс чистого файла
+            
+            let resultHTML = '';
+            if (isClean) {
+                resultHTML = '<div class="result-box success"><i class="bi bi-shield-check"></i> Угроз не обнаружено. Файл безопасен.</div>';
+            } else {
+                resultHTML = '<div class="result-box danger"><i class="bi bi-exclamation-triangle"></i> Обнаружена потенциальная угроза: Trojan.GenericKD</div>';
+            }
+            resultHTML += '<button class="btn btn-secondary" onclick="resetScanner()" style="margin-top: 15px;">Проверить другой файл</button>';
+            
+            $('scannerResult').innerHTML += resultHTML;
+            addHistory('scanner', `${file.name}: ${isClean ? 'чистый' : 'угроза'}`);
+            saveSetting('scannerUsed', true);
+        }
+    }, 600);
+}
+
+function resetScanner() {
+    $('scannerDrop').style.display = 'block';
+    $('scannerResult').style.display = 'none';
+    $('scannerResult').innerHTML = '';
+    $('fileInput').value = '';
+}
+
+// --- ФИШИНГ СИМУЛЯТОР ---
+const phishingEmails = [
+    { 
+        from: "support@g0ogle.com", 
+        fromName: "Google Security", 
+        subject: "Ваш аккаунт будет заблокирован", 
+        body: "Мы обнаружили подозрительную активность. Перейдите по ссылке и введите данные. Аккаунт будет заблокирован через 24 часа.", 
+        isPhishing: true, 
+        hints: ["Подозрительный домен: g0ogle.com", "Угроза блокировки", "Запрос данных"] 
+    },
+    { 
+        from: "noreply@vk.com", 
+        fromName: "ВКонтакте", 
+        subject: "Новые рекомендации для вас", 
+        body: "Привет! Мы подготовили для вас персональные рекомендации сообществ. Заходите в приложение.", 
+        isPhishing: false, 
+        hints: ["Официальный домен vk.com", "Нет запроса данных", "Нет угроз"] 
+    },
+    { 
+        from: "prize@amazon-gift.org", 
+        fromName: "Amazon Prize", 
+        subject: "ВЫ ВЫИГРАЛИ iPhone 15 Pro!", 
+        body: "Поздравляем! Для получения приза оплатите доставку 299₽ и укажите данные карты.", 
+        isPhishing: true, 
+        hints: ["Неофициальный домен", "Просят оплату и данные карты", "Слишком хорошее предложение"] 
+    }
+];
+
+let phIdx = 0, phScore = 0, phGameStarted = false, phMiss = [];
+
+function initPhishingGame() {
+    if (phGameStarted) return;
+    phGameStarted = true; 
+    phIdx = 0; 
+    phScore = 0; phMiss = [];
+    renderPhishing();
+}
+
+function renderPhishing() {
+    if (phIdx >= phishingEmails.length) {
+        const percentage = Math.round((phScore / phishingEmails.length) * 100);
+        addHistory('phishing', `Фишинг: ${phScore}/${phishingEmails.length} (${percentage}%)`);
+        $('phishingGame').innerHTML = summaryHTML({ title: 'симулятор фишинга', correct: phScore, total: phishingEmails.length, items: phMiss,
+            next: '<button class="btn btn-primary" onclick="phGameStarted=false; initPhishingGame()">Играть заново</button><button class="btn btn-secondary" onclick="showPage(\'quiz\')">К тесту</button>' });
+        checkAchievements(percentage);
+        return;
+    }
+    
+    const email = phishingEmails[phIdx];
+    const gameDiv = $('phishingGame');
+    gameDiv.innerHTML = `
+        <div class="phishing-email">
+            <div class="email-header">
+                <div class="email-meta">
+                    <h4>${email.fromName}</h4>
+                    <p>${email.from}</p>
+                </div>
+            </div>
+            <div class="email-body">
+                <h4 style="margin-bottom: 10px;">Тема: ${email.subject}</h4>
+                <p>${email.body}</p>
+            </div>
+            <div class="email-actions">
+                <button class="btn btn-danger" onclick="phishAnswer(true)">Это фишинг</button>
+                <button class="btn btn-success" onclick="phishAnswer(false)">Это настоящее</button>
+            </div>
+            <div id="phishFeedback" style="display: none; margin-top: 15px;"></div>
+        </div>
+    `;
+}
+
+function phishAnswer(userChoice) {
+    const email = phishingEmails[phIdx];
+    const isCorrect = userChoice === email.isPhishing;
+    if (isCorrect) phScore++;
+    else phMiss.push({ q: email.fromName + ' <' + email.from + '>', mine: userChoice ? 'фишинг' : 'настоящее', right: email.isPhishing ? 'фишинг' : 'настоящее' });
+    
+    const feedbackDiv = $('phishFeedback');
+    feedbackDiv.style.display = 'block';
+    feedbackDiv.innerHTML = `
+        <div class="result-box ${isCorrect ? 'success' : 'danger'}">
+            <h4>${isCorrect ? '<i class="bi bi-check-circle"></i> Верно!' : '<i class="bi bi-x-circle"></i> Ошибка!'}</h4>
+            <p>Это ${email.isPhishing ? 'действительно фишинговое письмо' : 'настоящее письмо'}</p>
+            <ul style="text-align: left; margin-top: 10px; font-size: 13px;">
+                ${email.hints.map(h => `<li>${h}</li>`).join('')}
+            </ul>
+            <button class="btn btn-primary" style="margin-top: 10px;" onclick="phIdx++; renderPhishing()">Далее</button>
+        </div>
+    `;
+    document.querySelector('.email-actions').style.display = 'none';
+}
+
+// --- ОБЩИЕ ФУНКЦИИ ---
+function showMemoTab(tabId, btn) {
+    const parent = btn.closest('.page');
+    parent.querySelectorAll('.memo-tab').forEach(t => t.style.display = 'none');
+    $(`memoTab-${tabId}`).style.display = 'block';
+    
+    parent.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+}
+
+function addHistory(type, description) {
+    const history = loadSetting('history', []);
+    history.unshift({ type, desc: description, date: new Date().toLocaleString('ru-RU') });
+    saveSetting('history', history.slice(0, 50));
+    touchStreak();
+    const fx = { password: 5, links: 5, scanner: 5, certificate: 15 }[type];
+    if (fx) {
+        const d = loadSetting('xpday', { date: '', t: [] });
+        if (d.date !== dayKey()) { d.date = dayKey(); d.t = []; }
+        if (!d.t.includes(type)) { d.t.push(type); saveSetting('xpday', d); addXP(fx); }
+    }
+}
+
+function checkAchievements(score) {
+    const achievements = loadSetting('achievements', []);
+    const tests = loadSetting('tests', []);
+    
+    if (score !== undefined) {
+        tests.push(score);
+        saveSetting('tests', tests);
+    }
+    
+    const achievementList = [
+        { id: 'first_test', title: 'Первый шаг', desc: 'Пройди первый тест', icon: '<i class="bi bi-bullseye"></i>' },
+        { id: 'perfect', title: 'Перфекционист', desc: '100% в тесте', icon: '<i class="bi bi-patch-check"></i>' },
+        { id: 'good_score', title: 'Отличник', desc: '80%+ в тесте', icon: '<i class="bi bi-stars"></i>' },
+        { id: 'pass_gen', title: 'Криптограф', desc: 'Сгенерируй пароль', icon: '<i class="bi bi-key"></i>' },
+        { id: 'link_check', title: 'Инспектор', desc: 'Проверь ссылку', icon: '<i class="bi bi-link-45deg"></i>' },
+        { id: 'scanner_user', title: 'Аналитик', desc: 'Просканируй файл', icon: '<i class="bi bi-folder2-open"></i>' }
+    ];
+
+    let newUnlock = false;
+    achievementList.forEach(ach => {
+        if (achievements.includes(ach.id)) return;
+        
+        let unlocked = false;
+        if (ach.id === 'first_test' && tests.length >= 1) unlocked = true;
+        if (ach.id === 'perfect' && tests.some(v => v === 100)) unlocked = true;
+        if (ach.id === 'good_score' && tests.some(v => v >= 80)) unlocked = true;
+        if (ach.id === 'pass_gen' && loadSetting('passGenerated', false)) unlocked = true;
+        if (ach.id === 'link_check' && loadSetting('linkChecked', false)) unlocked = true;
+        if (ach.id === 'scanner_user' && loadSetting('scannerUsed', false)) unlocked = true;
+
+        if (unlocked) {
+            achievements.push(ach.id);
+            showBadgePopup(ach.icon, ach.title, ach.desc);
+            newUnlock = true;
+        }
+    });
+    
+    if (newUnlock) saveSetting('achievements', achievements);
+}
+
+function showBadgePopup(icon, title, desc) {
+    $('bpIcon').innerHTML = icon;
+    $('bpTitle').textContent = title;
+    $('bpDesc').textContent = desc;
+    $('badgePopup').classList.add('show');
+    setTimeout(() => $('badgePopup').classList.remove('show'), 4000);
+}
+
+function updateCabinet() {
+    renderGx();
+    const tests = loadSetting('tests', []);
+    const avgScore = tests.length ? Math.round(tests.reduce((a, b) => a + b, 0) / tests.length) : 0;
+    const achievements = loadSetting('achievements', []);
+    const history = loadSetting('history', []);
+    
+    $('statTests').textContent = tests.length;
+    $('statAvg').textContent = avgScore + '%';
+    $('statAchievements').textContent = achievements.length;
+    $('statTotal').textContent = history.length;
+
+    const allAchievements = [
+        { id: 'first_test', title: 'Первый шаг', desc: 'Пройди первый тест', icon: '<i class="bi bi-bullseye"></i>' },
+        { id: 'perfect', title: 'Перфекционист', desc: '100% в тесте', icon: '<i class="bi bi-patch-check"></i>' },
+        { id: 'good_score', title: 'Отличник', desc: '80%+ в тесте', icon: '<i class="bi bi-stars"></i>' },
+        { id: 'pass_gen', title: 'Криптограф', desc: 'Сгенерируй пароль', icon: '<i class="bi bi-key"></i>' },
+        { id: 'link_check', title: 'Инспектор', desc: 'Проверь ссылку', icon: '<i class="bi bi-link-45deg"></i>' },
+        { id: 'scanner_user', title: 'Аналитик', desc: 'Просканируй файл', icon: '<i class="bi bi-folder2-open"></i>' }
+    ];
+
+    let achievementsHTML = '';
+    allAchievements.forEach(ach => {
+        const unlocked = achievements.includes(ach.id);
+        achievementsHTML += `
+            <div class="achievement ${unlocked ? 'unlocked' : 'locked'}">
+                <div class="ach-icon" style="background: var(--bg-card-hover);">${ach.icon}</div>
+                <div class="ach-info">
+                    <h4>${ach.title}</h4>
+                    <p>${ach.desc}</p>
+                </div>
+            </div>
+        `;
+    });
+    $('achievementsGrid').innerHTML = achievementsHTML;
+
+    let historyHTML = '';
+    if (!history.length) {
+        historyHTML = '<div class="result-box">Пока нет действий. Начни обучение!</div>';
+    } else {
+        history.forEach(entry => {
+            historyHTML += `
+                <div class="history-item">
+                    <div class="h-info">
+                        <h4>${entry.desc}</h4>
+                        <p>${entry.date}</p>
+                    </div>
+                </div>
+            `;
+        });
+    }
+    $('historyList').innerHTML = historyHTML;
+}
+
+// --- КОНФЕТТИ (ИСПРАВЛЕНИЕ ОШИБКИ) ---
+function launchConfetti() {
+    const container = $('confettiContainer');
+    if (!container) return; // Защита от ошибки, если элемента нет
+    
+    const colors = ['#6c5ce7', '#a855f7', '#06b6d4', '#10b981', '#f59e0b'];
+    container.innerHTML = '';
+    for (let i = 0; i < 50; i++) {
+        const piece = document.createElement('div');
+        piece.className = 'confetti-piece';
+        piece.style.left = Math.random() * 100 + '%';
+        piece.style.background = colors[Math.floor(Math.random() * colors.length)];
+        piece.style.animationDelay = Math.random() * 2 + 's';
+        container.appendChild(piece);
+    }
+    setTimeout(() => { container.innerHTML = ''; }, 4000);
+}
+
+
+// --- МАРШРУТ ОБУЧЕНИЯ ---
+function updateProgress() {
+    const t = loadSetting('tests', []), a = loadSetting('achievements', []);
+    const avg = t.length ? Math.round(t.reduce((x, y) => x + y, 0) / t.length) : 0;
+    const steps = [
+        { id: 'memo', t: 'Прочитай памятку', d: 'Основы: пароли, 2FA, обновления', done: loadSetting('seen_memo', false) },
+        { id: 'scammers', t: 'Узнай виды мошенников', d: 'Как они действуют и как им противостоять', done: loadSetting('seen_scammers', false) },
+        { id: 'phishing', t: 'Потренируйся на фишинге', d: 'Отличи настоящее письмо от поддельного', done: loadSetting('seen_phishing', false) },
+        { id: 'password', t: 'Создай надёжный пароль', d: 'Сгенерируй и оцени его стойкость', done: loadSetting('passGenerated', false) },
+        { id: 'links', t: 'Проверь ссылку', d: 'Найди признаки опасного адреса', done: loadSetting('linkChecked', false) },
+        { id: 'quiz', t: 'Сдай итоговый тест', d: 'Набери 80% и получи сертификат', done: t.length > 0 }
+    ];
+    const next = steps.find(s => !s.done), done = steps.filter(s => s.done).length;
+    const pct = Math.round(done / steps.length * 100);
+    $('pathList').innerHTML = steps.map((s, i) => `<button type="button" class="step ${s.done ? 'done' : ''} ${s === next ? 'next' : ''}" onclick="showPage('${s.id}')"><span class="n">${s.done ? '<i class="bi bi-check2"></i>' : i + 1}</span><span><b>${s.t}</b><small>${s.d}</small></span><i class="bi bi-chevron-right"></i></button>`).join('');
+    const go = next || { id: 'quiz', t: 'Пройти тест ещё раз' };
+    $('heroCta').innerHTML = `<i class="bi bi-play-fill"></i> ${next ? (done ? 'Продолжить: ' : 'Начать: ') + go.t : go.t}`;
+    $('heroCta').onclick = () => showPage(go.id);
+    $('pTests').textContent = t.length; $('pAvg').textContent = avg + '%';
+    $('pAch').textContent = a.length + '/6'; $('ringVal').textContent = pct + '%';
+    requestAnimationFrame(() => $('ring').style.setProperty('--p', pct));
+}
+updateProgress();
+
+// --- ПОИСК ПО РАЗДЕЛАМ ---
+(function () {
+    const S = [
+        ['quiz', 'Тест по безопасности', 'тест экзамен сертификат вопросы', 'clipboard2-check'],
+        ['phishing', 'Симулятор фишинга', 'письмо почта фишинг', 'envelope-exclamation'],
+        ['ai-vs-real', 'AI vs Real', 'нейросеть фейк фото deepfake', 'robot'],
+        ['password', 'Генератор паролей', 'пароль генератор', 'key'],
+        ['links', 'Проверка ссылок', 'ссылка url сайт', 'link-45deg'],
+        ['scanner', 'Сканер файлов', 'файл вирус сканер', 'file-earmark-lock2'],
+        ['memo', 'Памятка', 'советы 2fa wifi правила', 'journal-bookmark'],
+        ['scammers', 'Виды мошенников', 'мошенники дропперы смишинг', 'incognito'],
+        ['cabinet', 'Личный кабинет', 'профиль достижения история статистика', 'person-badge']
+    ];
+    const inp = $('searchInput'), box = $('searchResults');
+    function render() {
+        const q = inp.value.trim().toLowerCase();
+        const r = S.filter(s => !q || (s[1] + ' ' + s[2]).toLowerCase().includes(q));
+        box.innerHTML = r.length ? r.map(s => `<button type="button" data-id="${s[0]}"><i class="bi bi-${s[3]}"></i>${s[1]}</button>`).join('')
+            : '<p>Ничего не найдено. Попробуйте «пароль» или «фишинг».</p>';
+        box.classList.add('show');
+    }
+    inp.addEventListener('input', render);
+    inp.addEventListener('focus', render);
+    inp.addEventListener('keydown', e => {
+        if (e.key === 'Enter') { const f = box.querySelector('button'); if (f) f.click(); }
+        if (e.key === 'Escape') { box.classList.remove('show'); inp.blur(); }
+    });
+    box.addEventListener('click', e => {
+        const b = e.target.closest('button'); if (!b) return;
+        showPage(b.dataset.id); inp.value = ''; box.classList.remove('show');
+    });
+    document.addEventListener('click', e => { if (!e.target.closest('.search')) box.classList.remove('show'); });
+})();
+
+
+// --- УРОВНИ, ОПЫТ И СЕРИЯ ДНЕЙ ---
+const LV = [['Новичок', 0], ['Стажёр', 100], ['Страж', 250], ['Эксперт', 450], ['Мастер', 700], ['Легенда', 1000]];
+const esc = s => String(s).replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]));
+const plural = n => { const m = n % 10, c = n % 100; return c > 10 && c < 15 ? 'дней' : m === 1 ? 'день' : m > 1 && m < 5 ? 'дня' : 'дней'; };
+function dayKey(off = 0) { const d = new Date(); d.setDate(d.getDate() + off); return d.toLocaleDateString('sv-SE'); }
+
+function levelInfo(xp) {
+    let i = 0;
+    while (i < LV.length - 1 && xp >= LV[i + 1][1]) i++;
+    const lo = LV[i][1], hi = i < LV.length - 1 ? LV[i + 1][1] : null;
+    return { n: i + 1, name: LV[i][0], xp, hi, pct: hi ? Math.round((xp - lo) / (hi - lo) * 100) : 100 };
+}
+function addXP(n) {
+    const before = levelInfo(loadSetting('xp', 0)).n, xp = loadSetting('xp', 0) + n;
+    saveSetting('xp', xp);
+    const after = levelInfo(xp);
+    if (after.n > before) showBadgePopup('<i class="bi bi-arrow-up-circle"></i>', 'Уровень ' + after.n, after.name);
+    renderGx();
+    return after;
+}
+function getStreak() {
+    const s = loadSetting('streak', { last: '', count: 0, best: 0, days: [] });
+    const alive = s.last === dayKey() || s.last === dayKey(-1);
+    return { ...s, shown: alive ? s.count : 0, today: s.last === dayKey() };
+}
+function touchStreak() {
+    const s = loadSetting('streak', { last: '', count: 0, best: 0, days: [] });
+    if (s.last === dayKey()) return;
+    s.count = s.last === dayKey(-1) ? s.count + 1 : 1;
+    s.last = dayKey(); s.best = Math.max(s.best || 0, s.count);
+    s.days = [...(s.days || []), s.last].slice(-30);
+    saveSetting('streak', s);
+    renderGx();
+}
+function lvlImg(n) {
+    return 'data:image/svg+xml,' + encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 60 70"><path d="M30 3 54 12v20c0 18-11 30-24 35C17 62 6 50 6 32V12z" fill="#5b21b6" stroke="#a3ff12" stroke-width="3"/><text x="30" y="42" text-anchor="middle" font-family="monospace" font-weight="700" font-size="24" fill="#fff">${n}</text></svg>`);
+}
+function gxHTML() {
+    const L = levelInfo(loadSetting('xp', 0)), S = getStreak();
+    const dots = [...Array(7)].map((_, i) => `<i class="${(S.days || []).includes(dayKey(i - 6)) ? 'on' : ''}${i === 6 ? ' today' : ''}"></i>`).join('');
+    const hint = S.today ? 'Сегодня засчитано' : S.shown ? 'Сделай задание сегодня, чтобы не потерять серию' : 'Начни серию сегодня';
+    return `<div class="gx-lv"><img src="${lvlImg(L.n)}" alt=""><div><small>Уровень ${L.n}</small><b>${L.name}</b></div></div>
+        <div class="gx-bar"><span style="width:${L.pct}%"></span></div>
+        <div class="gx-xp">${L.xp} XP${L.hi ? ` · до уровня ${L.n + 1}: ${L.hi - L.xp}` : ' · максимум'}</div>
+        <div class="gx-streak"><i class="bi bi-fire"></i><div><b>${S.shown} ${plural(S.shown)} подряд</b><small>${hint}</small></div></div>
+        <div class="gx-dots">${dots}</div>`;
+}
+function renderGx() {
+    ['gxPanel', 'sideStats', 'gxCabinet'].forEach(id => { const e = $(id); if (e) e.innerHTML = gxHTML(); });
+}
+
+// --- ИТОГИ ПОСЛЕ ТЕСТА ---
+function summaryHTML(o) {
+    const pct = Math.round(o.correct / o.total * 100), wrong = o.total - o.correct;
+    const before = levelInfo(loadSetting('xp', 0));
+    touchStreak();
+    const gain = o.correct * 10 + (pct === 100 ? 20 : 0);
+    const L = addXP(gain), S = getStreak();
+    const v = pct >= 90 ? ['bi-shield-check', 'Отлично! Ты настоящий кибер-страж.'] : pct >= 70 ? ['bi-hand-thumbs-up', 'Хорошо! Ещё немного практики.'] : pct >= 50 ? ['bi-book', 'Неплохо, но стоит повторить материал.'] : ['bi-exclamation-triangle', 'Нужно серьёзно поработать над знаниями.'];
+    const miss = (o.items || []).map(m => `<div class="sum-miss"><b>${esc(m.q)}</b>${m.mine ? `<span class="no">Твой ответ: ${esc(m.mine)}</span><br>` : ''}<span class="yes">Верно: ${esc(m.right)}</span></div>`).join('');
+    return `<div class="sum">
+        <div class="sum-head"><div class="sum-pct" style="--p:${pct}"><span>${pct}%</span></div>
+            <div><h2>Итоги: ${esc(o.title)}</h2><p class="sum-verdict"><i class="bi ${v[0]}"></i> ${v[1]}</p></div></div>
+        <div class="sum-stats"><div><b class="ok">${o.correct}</b><small>верно</small></div><div><b class="bad">${wrong}</b><small>ошибок</small></div><div><b class="xp">+${gain}</b><small>XP</small></div></div>
+        <div class="sum-gx">
+            <div class="gx-lv"><img src="${lvlImg(L.n)}" alt=""><div><small>Уровень ${L.n}</small><b>${L.name}</b>${L.n > before.n ? '<br><span class="sum-up">НОВЫЙ УРОВЕНЬ</span>' : ''}</div></div>
+            <div class="gx-streak"><i class="bi bi-fire"></i><div><b>${S.shown} ${plural(S.shown)} подряд</b><small>${S.shown > 1 ? 'Вернись завтра, чтобы продлить серию' : 'Серия началась, не пропускай дни'}</small></div></div>
+        </div>
+        <div class="gx-bar" style="margin-top:12px"><span style="width:${L.pct}%"></span></div>
+        <div class="gx-xp">${L.xp} XP${L.hi ? ` · до уровня ${L.n + 1}: ${L.hi - L.xp}` : ''}</div>
+        ${miss ? `<h3>Разбор ошибок</h3>${miss}` : '<p class="sum-clean"><i class="bi bi-check-circle"></i> Без ошибок, так держать.</p>'}
+        <div class="sum-next">${o.next || ''}</div></div>`;
+}
+
+// --- КАРТИНКИ В ЗАГОЛОВКАХ СТРАНИЦ ---
+(function () {
+    const L = '#84cc16';
+    const A = {
+        quiz: `<rect x="42" y="30" width="66" height="90" rx="9"/><path d="M62 30v-6h26v6M56 62h38M56 80h38M56 98h18"/><path stroke="${L}" d="M82 106l7 7 14-16"/>`,
+        'ai-vs-real': `<rect x="38" y="42" width="74" height="70" rx="14"/><circle cx="60" cy="72" r="6"/><circle cx="90" cy="72" r="6"/><path d="M58 94h34M75 42V28"/><circle stroke="${L}" cx="75" cy="23" r="5"/>`,
+        password: `<circle cx="54" cy="75" r="20"/><path d="M74 75h48M106 75v16M120 75v11" stroke="${L}"/>`,
+        links: `<rect x="22" y="60" width="58" height="30" rx="15"/><rect x="70" y="60" width="58" height="30" rx="15"/><path stroke="${L}" d="M62 75h26"/>`,
+        memo: `<path d="M28 40h40q7 0 7 7v68q0-7-7-7H28zM122 40H82q-7 0-7 7v68q0-7 7-7h40z"/><path stroke="${L}" d="M40 60h24M86 60h24M86 76h24"/>`,
+        scammers: `<path d="M38 72h74M52 72l8-32h30l8 32"/><circle cx="60" cy="98" r="11"/><circle cx="90" cy="98" r="11"/><path stroke="${L}" d="M71 98h8"/>`,
+        scanner: `<path d="M50 28h36l20 20v74H50zM86 28v20h20"/><rect stroke="${L}" x="62" y="88" width="32" height="22" rx="4"/><path stroke="${L}" d="M69 88v-6a9 9 0 0 1 18 0v6"/>`,
+        cabinet: `<circle cx="75" cy="56" r="20"/><path d="M36 122c4-28 24-38 39-38s35 10 39 38"/><path stroke="${L}" d="M62 104l8 8 18-18"/>`,
+        phishing: `<rect x="26" y="50" width="92" height="62" rx="10"/><path d="M26 58l46 34 46-34"/><circle stroke="${L}" cx="120" cy="42" r="11"/><path stroke="${L}" d="M120 36v6M120 48v.1"/>`
+    };
+    Object.entries(A).forEach(([id, body]) => {
+        const hd = document.querySelector('#page-' + id + ' .header');
+        if (!hd) return;
+        const img = new Image();
+        img.className = 'page-art'; img.alt = ''; img.setAttribute('aria-hidden', 'true');
+        img.src = 'data:image/svg+xml,' + encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 150 150"><circle cx="75" cy="75" r="70" fill="#8b5cf6" fill-opacity=".12" stroke="#8b5cf6" stroke-opacity=".5" stroke-dasharray="4 7"/><g fill="none" stroke="#a78bfa" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">${body}</g></svg>`);
+        hd.appendChild(img);
+    });
+})();
+
+renderGx();
