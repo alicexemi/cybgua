@@ -735,3 +735,79 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;
 .gx-dots i{transform-origin:left center}
 .gx-dots i.on{animation:dotFill .45s calc(var(--i)*80ms) both}
 @keyframes dotFill{from{transform:scaleX(0);opacity:.3}to{transform:none;opacity:1}}
+
+/* ===== v5: баннеры и кнопки по сетке, уровни обучения ===== */
+/* Общая сетка: баннеры центрируются относительно области контента, а не окна */
+:root{--gutter:28px;--content-left:288px}
+@media(min-width:769px) and (hover:hover){:root{--content-left:44px}}
+@media(max-width:768px){:root{--gutter:14px;--content-left:0px}}
+
+.cookie-banner,.badge-popup,.notification-popup{position:fixed;left:calc(var(--content-left) + var(--gutter));right:var(--gutter);margin:0 auto;transform:none;width:auto;box-sizing:border-box;text-align:center}
+.badge-popup{top:20px;max-width:440px;pointer-events:none}
+.notification-popup{top:20px;max-width:440px;z-index:1100;pointer-events:none;padding:14px 18px;border-radius:16px;background:var(--bg-secondary);border:2px solid var(--warning);color:var(--text-primary);box-shadow:var(--shadow);font-size:14px;font-weight:600;line-height:1.5;animation:slideUp .3s ease}
+.cookie-banner{top:auto;bottom:20px;max-width:860px;padding:18px 22px;border-radius:18px}
+.cookie-banner.show{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:12px 24px;animation:none}
+.cookie-banner p{margin:0}
+.cookie-banner .cookie-btns{display:grid;grid-template-columns:repeat(2,minmax(120px,1fr));gap:10px;margin:0}
+.cookie-banner .btn{width:100%;min-height:44px}
+@media(max-width:640px){.cookie-banner.show{grid-template-columns:1fr}}
+
+/* Кнопки: группы — равные колонки, одиночные — по центру с одинаковой шириной */
+.email-actions,.sum-next,.up-actions,#certOutput>div,#aiGameArea>div:not([class]){display:grid!important;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px!important;margin-left:0;margin-right:0}
+.email-actions .btn,.sum-next .btn,.up-actions .btn,#certOutput .btn,#aiGameArea>div:not([class]) .btn{width:100%}
+.page>.btn,.input-group>.btn,.result-box>.btn,#scannerResult>.btn,#aiGameArea>.btn,#phishingGame>.btn{display:flex;width:fit-content;min-width:220px;margin-left:auto;margin-right:auto}
+.hero-buttons .btn{min-width:0}
+
+/* Переключатель уровней */
+.tier-bar{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:10px 16px;max-width:900px;margin:-6px auto 22px}
+.tier-label{display:inline-flex;align-items:center;gap:8px;font-size:13px;font-weight:700;color:var(--text-secondary)}
+.tier-switch{display:grid;grid-template-columns:1fr 1fr;gap:4px;padding:4px;border-radius:999px;border:1px solid var(--border);background:var(--bg-card)}
+.tier-btn{position:relative;display:inline-flex;align-items:center;justify-content:center;gap:8px;min-width:170px;height:42px;padding:0 20px;border:0;border-radius:999px;background:none;color:var(--text-secondary);font:inherit;font-size:14px;font-weight:700;cursor:pointer;transition:.25s}
+.tier-btn:hover{background:var(--bg-card-hover);color:var(--text-primary)}
+.tier-btn.active{background:var(--gradient);color:#fff;box-shadow:0 4px 16px var(--glow1)}
+.tier-btn.locked{opacity:.6;cursor:not-allowed}
+.tier-btn.locked:hover{background:none;color:var(--text-secondary)}
+.tier-btn.ready{color:var(--text-primary);animation:readyPulse 1.8s ease-in-out infinite}
+.tier-btn.ready::after{content:"Обновление";position:absolute;top:-9px;right:8px;padding:2px 8px;border-radius:99px;background:var(--lime);color:var(--lime-ink);font-size:10px;font-weight:800}
+.tier-btn.shake{animation:shake .4s}
+.tier-hint{flex-basis:100%;min-height:1.2em;font-size:12px;color:var(--text-secondary)}
+@keyframes readyPulse{0%{box-shadow:0 0 0 0 rgba(163,255,18,.55)}70%,100%{box-shadow:0 0 0 12px rgba(163,255,18,0)}}
+@keyframes shake{20%,60%{transform:translateX(-5px)}40%,80%{transform:translateX(5px)}}
+@media(max-width:560px){.tier-label{display:none}.tier-btn{min-width:0;padding:0 14px}.tier-switch{width:100%}}
+
+/* Закрытые разделы в меню */
+.nav-lock{display:none;margin-left:auto;width:auto!important;font-size:13px!important}
+.nav-item.locked{opacity:.7}.nav-item.locked .nav-lock{display:inline-block}
+
+/* Окно обновления */
+.upgrade-modal{position:fixed;inset:0;z-index:1200;display:none;place-items:center;padding:20px var(--gutter) 20px calc(var(--content-left) + var(--gutter));background:rgba(5,8,22,.72);backdrop-filter:blur(6px)}
+.upgrade-modal.show{display:grid;animation:upFade .3s ease}
+.upgrade-modal,.upgrade-modal *{text-align:center}
+.up-card{position:relative;width:100%;max-width:520px;max-height:100%;overflow:auto;padding:30px 28px 26px;border-radius:26px;border:1px solid var(--accent);background:var(--bg-secondary);box-shadow:0 0 0 1px var(--glow1),0 30px 80px var(--glow1);animation:upIn .6s cubic-bezier(.2,.9,.3,1.2)}
+.up-card::before{content:"";position:absolute;inset:0 0 auto;height:3px;background:linear-gradient(90deg,transparent,var(--lime),var(--accent),transparent);background-size:200% 100%;animation:shimmer 2.2s linear infinite}
+.up-art{position:relative;width:120px;height:120px;margin:0 auto 14px;display:grid;place-items:center}
+.up-ring{position:absolute;inset:0;border-radius:50%;border:2px solid var(--accent);opacity:0;animation:upRing 2.4s ease-out infinite}
+.up-ring.r2{animation-delay:1.2s}
+.up-badge{position:relative;width:84px;height:84px;border-radius:26px;display:grid;place-items:center;background:var(--gradient);box-shadow:0 0 34px var(--accent);font-size:44px;color:var(--lime);animation:float 3s ease-in-out infinite}
+.up-badge i{display:block;animation:upArrow 1.6s ease-in-out infinite}
+.up-kicker{display:inline-block;padding:4px 12px;border-radius:99px;background:var(--lime);color:var(--lime-ink);font-size:12px;font-weight:800}
+.up-card h2{margin:12px 0 8px;font-size:22px;line-height:1.25}
+.up-sub{margin:0 auto 16px;color:var(--text-secondary);font-size:14px;line-height:1.6}
+.up-list{list-style:none;display:grid;gap:8px;margin:0 0 18px;padding:0}
+.up-list li{display:grid;grid-template-columns:40px minmax(0,1fr);gap:12px;align-items:center;padding:10px 12px;border-radius:14px;border:1px solid var(--border);background:var(--bg-card);opacity:0;animation:upItem .5s forwards}
+.up-list li:nth-child(1){animation-delay:.35s}.up-list li:nth-child(2){animation-delay:.5s}.up-list li:nth-child(3){animation-delay:.65s}.up-list li:nth-child(4){animation-delay:.8s}
+.up-list li span,.up-list li span *{text-align:left}
+.up-list i{display:grid;place-items:center;width:40px;height:40px;border-radius:12px;background:var(--ring-bg);color:var(--hl);font-size:18px}
+.up-list b{display:block;font-size:14px}.up-list small{font-size:12px;color:var(--text-secondary)}
+.up-actions{grid-template-columns:1.4fr 1fr!important}
+.up-progress{display:none;margin:6px 0 4px}
+.up-bar{height:10px;border-radius:99px;background:var(--ring-bg);overflow:hidden}
+.up-bar span{display:block;width:0;height:100%;border-radius:99px;background:linear-gradient(90deg,var(--accent),var(--lime));transition:width .5s ease}
+.up-progress small{display:block;margin-top:10px;font-size:12px;color:var(--text-secondary)}
+.up-card.busy .up-actions{display:none!important}.up-card.busy .up-progress{display:block}
+@media(max-width:480px){.up-actions{grid-template-columns:1fr!important}}
+@keyframes upFade{from{opacity:0}}
+@keyframes upIn{from{opacity:0;transform:translateY(30px) scale(.92)}to{opacity:1;transform:none}}
+@keyframes upItem{from{opacity:0;transform:translateX(-14px)}to{opacity:1;transform:none}}
+@keyframes upRing{0%{transform:scale(.7);opacity:.8}100%{transform:scale(1.5);opacity:0}}
+@keyframes upArrow{0%,100%{transform:translateY(5px)}50%{transform:translateY(-5px)}}
